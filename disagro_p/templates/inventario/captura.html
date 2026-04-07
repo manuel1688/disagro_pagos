@@ -15,7 +15,7 @@
 {% if planificacion_activa is none %}
 <div class="alert alert-danger alert-dismissible fade show" role="alert">
   <strong>Advertencia!</strong> Actualmente, No hay planificación definida.
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+  <button type="button" class="close" data-ui-dismiss="alert" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
 </div>
@@ -331,7 +331,7 @@
             {% endif %}
             <div class="alert {{ alerta_captura_clase }} alert-dismissible fade show auto-dismiss" role="alert">
               <strong>Formulario de {% if nuevo_articulo %}nuevo artículo{% else %}captación{% endif %},</strong> proceso planificado por {{planificacion_activa.USUARIO}}. (Número de planificación {{planificacion_activa.ID}}).
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <button type="button" class="close" data-ui-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
@@ -339,7 +339,7 @@
           {% if re_conteo %}
             <div class="alert alert-danger alert-dismissible fade show auto-dismiss" role="alert">
               <strong>Formulario de reconteo,</strong> proceso planificado por {{planificacion_activa.USUARIO}}. (Número de planificación {{planificacion_activa.ID}}).
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <button type="button" class="close" data-ui-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>

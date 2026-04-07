@@ -19,8 +19,8 @@
                <div class="gallery-image-actions">
                   <button type="button"
                           class="btn btn-primary btn-sm"
-                          data-toggle="modal"
-                          data-target="#galleryZoomModal"
+                          data-ui-toggle="modal"
+                          data-ui-target="#galleryZoomModal"
                           data-image="{{ item.IMAGEN }}"
                           data-articulo="{{ item.ARTICULO }}"
                           data-descripcion="{{ item.DESCRIPCION }}">
@@ -50,14 +50,14 @@
    {% endif %}
 </div>
 
-<div class="modal fade" id="galleryZoomModal" tabindex="-1" role="dialog" aria-labelledby="galleryZoomModalLabel" aria-hidden="true">
+<div class="modal" id="galleryZoomModal" tabindex="-1" role="dialog" aria-labelledby="galleryZoomModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="galleryZoomModalLabel">
           <span data-gallery-zoom-articulo></span>
         </h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+        <button type="button" class="close" data-ui-dismiss="modal" aria-label="Cerrar">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -71,21 +71,16 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  var zoomModal = $('#galleryZoomModal');
-  if (!zoomModal.length) {
-    return;
-  }
+  document.querySelectorAll('[data-ui-target="#galleryZoomModal"]').forEach(function(button) {
+    button.addEventListener('click', function() {
+      var imageSrc = button.getAttribute('data-image');
+      var articulo = button.getAttribute('data-articulo') || '';
+      var descripcion = button.getAttribute('data-descripcion') || '';
 
-  zoomModal.on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
-    var imageSrc = button.data('image');
-    var articulo = button.data('articulo') || '';
-    var descripcion = button.data('descripcion') || '';
-
-    var modal = $(this);
-    modal.find('[data-gallery-zoom-image]').attr('src', imageSrc);
-    modal.find('[data-gallery-zoom-articulo]').text(articulo);
-    modal.find('[data-gallery-zoom-descripcion]').text(descripcion);
+      document.querySelector('[data-gallery-zoom-image]').setAttribute('src', imageSrc);
+      document.querySelector('[data-gallery-zoom-articulo]').textContent = articulo;
+      document.querySelector('[data-gallery-zoom-descripcion]').textContent = descripcion;
+    });
   });
 });
 </script>

@@ -16,7 +16,7 @@
       <div class="col-md-2"></div>
       <div class="col-md-8">
         <div class="list-group">
-          <button {% if esta_aprobado %}disabled{% endif %} href="#" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-info" data-target="#exampleModal1" data-toggle="modal">
+          <button {% if esta_aprobado %}disabled{% endif %} href="#" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-info" data-ui-target="#exampleModal1" data-ui-toggle="modal">
             <div class="d-flex w-100 justify-content-between">
               <h5 class="mb-1">Cierre de toma física</h5>
               <small>1</small>
@@ -34,12 +34,12 @@
   </div>
   <br>
   <br>
-  <div class="modal fade" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">Cierre de toma física</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close" data-ui-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -58,7 +58,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button id="boton_cerrar_aprobacion" type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          <button id="boton_cerrar_aprobacion" type="button" class="btn btn-secondary" data-ui-dismiss="modal">Cerrar</button>
           <a href="/cierre/reporte" id="boton_aprobar_inventario" type="button" class="btn btn-outline-dark btn-sm ">Generar reporte</a>
           <button disabled id="boton_aprobar_inventario_loading" type="button" class="btn btn-outline-dark btn-sm active d-none">
             Aprobando ... 

@@ -38,34 +38,34 @@
   }
 
   document.addEventListener("click", function (event) {
-    const alertClose = event.target.closest('[data-ui-dismiss="alert"], [data-dismiss="alert"]');
+    const alertClose = event.target.closest('[data-ui-dismiss="alert"]');
     if (alertClose) {
       const alert = alertClose.closest(".alert");
       if (alert) alert.remove();
       return;
     }
 
-    const modalClose = event.target.closest('[data-ui-dismiss="modal"], [data-dismiss="modal"]');
+    const modalClose = event.target.closest('[data-ui-dismiss="modal"]');
     if (modalClose) {
       closeModal(modalClose.closest(".modal"));
       return;
     }
 
-    const collapseTrigger = event.target.closest('[data-ui-toggle="collapse"], [data-toggle="collapse"]');
+    const collapseTrigger = event.target.closest('[data-ui-toggle="collapse"]');
     if (collapseTrigger) {
       event.preventDefault();
       toggleCollapse(getTarget(collapseTrigger));
       return;
     }
 
-    const modalTrigger = event.target.closest('[data-ui-toggle="modal"], [data-toggle="modal"]');
+    const modalTrigger = event.target.closest('[data-ui-toggle="modal"]');
     if (modalTrigger) {
       event.preventDefault();
       openModal(getTarget(modalTrigger));
       return;
     }
 
-    const dropdownTrigger = event.target.closest('[data-ui-toggle="dropdown"], [data-toggle="dropdown"]');
+    const dropdownTrigger = event.target.closest('[data-ui-toggle="dropdown"]');
     if (dropdownTrigger) {
       event.preventDefault();
       const menu = dropdownTrigger.parentElement.querySelector(".dropdown-menu, .app-dropdown-menu");

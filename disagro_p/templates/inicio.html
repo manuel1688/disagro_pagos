@@ -304,8 +304,7 @@ $(document).ready(function() {
       });
   });
 
-  // Event handler cuando se abre el modal (Bootstrap lo abre con data-toggle)
-  $('#modalEditarArticulosInicio').on('show.bs.modal', function() {
+  $('#btn-editar-articulos-inicio').on('click', function() {
     cargarArticulosIncompletosInicio();
   });
 });
