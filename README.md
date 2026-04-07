@@ -1,171 +1,170 @@
-Disagro: Manejo de pagos con la boletas de transferencia
+# disagro_i
+# PORTAL
 
-Pais 
-Sociedad
-Banco 
-Y cuenta
+# --------------- Windows -----------------
 
-Pantalla de consulta de búsqueda de tres filtro del cobrador 
-FEchas 
-El monto y el tipo de transacción y descripción
+# CREAR ENTORNO VIRTUAL Y ACTIVAR
+python -m venv venv 
+.\venv\Scripts\activate
 
-Ctencio al cliente
+# INSTALAR PROYECTO DEPENDENCIAS
+pip install -e .
 
-Banco numero
-De cuenta
-Y numero de operación 
+# RECOMPILAR TAILWINDCSS LOCAL
+bash scripts/build_tailwind.sh
 
+# DESPLEGAR EL PROYECTO EN WINDOWS
+$env:FLASK_APP = "disagro_i"
+$env:FLASK_ENV = "development"
+flask run --host localhost --port 3000 
 
-
-Registros
-Recibo de pago
-Cliente
-Adjunto el comprobando
+# -----------------------------------------
 
 
-Estados:
-Asinado 
-O Disponible
+# ----- Linux|Mac -----
+
+# CREAR ENTORNO VIRTUAL Y ACTIVAR
+python -m venv venv 
+source venv/bin/activate 
+
+# INSTALAR PROYECTO DEPENDENCIAS
+pip install -e .
+
+# DESPLEGAR EL PROYECTO EN LINUX|MAC
+export SERVER=localhost
+export DATABASE=disagro_db
+export USERNAME=disagro
+export PASSWORD=disagro2024
+export PUERTO=5432
+export FLASK_APP=disagro_i
+export FLASK_ENV=development
+flask run --host localhost --port 3000
+----------------------------
+
+env SERVER=localhost DATABASE=disagro_db USERNAME=disagro PASSWORD=disagro2024 PUERTO=5432 FLASK_APP=disagro_i FLASK_ENV=development flask run --host localhost --port 3000
+
+env SERVER=0.0.0.0 DATABASE=disagro_db USERNAME=disagro PASSWORD=disagro2024 PUERTO=5432 FLASK_APP=disagro_i FLASK_ENV=development flask run --host 0.0.0.0 --port 4000
+
+# TailwindCSS
+- Archivo fuente: `disagro_p/static/css/tailwind.input.css`
+- Archivo compilado: `disagro_p/static/css/tailwind.css`
+- Configuración: `tailwind.config.js`
+- Binario standalone incluido en el repo: `./tailwindcss`
+
+# CREACION DE SUPER USUARIO
+
+docker exec -it postgres psql -h localhost -p 5432 -U disagro -d disagro_db
+docker exec -it disagro_inventario bash
+
+# COMANDO PARA CREAR EL SUPER USUARIO
+docker exec -it disagro_inventario python /app/disagro_i/super_usuario.py param1 param2
+
+# COMANDO PARA LANZAR LA CONSOLA DE POSTGRES
+docker exec -it 4229dbe27e1d4681ab066d472e48490873b09f1dc98dcd039b6fc6e84f045594 psql -U disagro -d disagro_db
 
 
-Filtros globales:
-
-Capaidad combinada
-Por rangos de fecha
-Valores o rango de valores
-Modenadas
-Cuentas de bancos o por bancos 
-
-Uno o mas banco al mismo tiempo
-Por descripción 
-Tipo de movimiento : deposito o transferecia 
-
-Poder descargar e incluso las imágenes nuevas asignadas 
-
-Tipo base asignado o no asignado
+# Recursos del nodo
+# server app:
+# Red Hat Enterprise Linux 9.4
+# RAM 16GB
+# Vcpu: 4
+# Docker version 28.0.4, build b8034c0
 
 
-Numero decimales???
+# GPC
 
-Samosa trabaja sobres sobre 
+#  En la carpeta principal del profecto sobre el dockerfile de flask
+sudo docker build -t disagro_flask .
 
-
-———————
-Tener el tipo de cambios
-Factura en dólares pero pagaron en cuézales
-Un campo para colocar el tipo de cambios
-Y una calculad.
+# docker run -d --name disagro_inventario_dev --network disagro_network disagro_flask
+sudo docker run -d --name disagro_inventario_dev --network disagro_network -p 3000:3000 disagro_flask
 
 
-——
+# Base de datos: Postgres
+sudo docker build -t disagro_postgres .
+sudo docker run -d --name disagro_postgres_dev --network disagro_network -p 5432:5432 disagro_postgres
 
-Un super rol para des hacer daditos 
+# Cuando los contenedores estan detenido no dejausar ese nombre para ese se usa el comando
+# logras ver los deteneido 
+sudo docker ps -a
 
-———
+# Eliminar imagen 
+docker image rm -f nombre_imagen
 
-Reporte de aplicaciónnes diaria 
-
-
-—— visualmebte que se vea la mano
-
-
-
-
-
-
-——————
-
-
-Manuel Otero was invited to the meeting.
- ——
-
-
-Rola de administración
-Finances
-Consultas
-Sueper usuairos 
-
-———
-
-Base de datos bancos
-Cuentas
-Y tipo de monedas
-Tipo de movimiento por banco 
-Base de datos de sociedad
-
-La cuenta a un banco y a una sociedad y por tanto a un país 
-Base destos de cliene 
-Tipo de cambios se van guadañándolasdo 
-Y nomenclatura tura de las modelas 
-
-———
-
-Trabajr con el estándar de tres caracteres USD
-
-
-————
-
-Agregar alguna sesiones de capacitación 
-
-————
+# Postgress
+docker build -t disagro_flask_postgres
 
 
 
+# ____________################
+
+# Detener el contenedor, eliminarlo y luego eliminar la imagen
+
+docker stop disagro_inventario_dev
+docker rm disagro_inventario_dev
+docker image rm disagro_flask
+
+# Para borrar la imagen 'disagro_flask'
+
+Si hay algún contenedor en ejecución o detenido que esté basado en esta imagen, primero detén y elimina esos contenedores. Por ejemplo:
+
+docker stop disagro_inventario_dev  
+docker rm disagro_inventario_dev  
+
+Una vez sin contenedores asociados, elimina la imagen usando su ID:
+
+docker rmi ef6b78eab032
+
+# 1.
+sudo docker stop disagro_flask_c
+sudo docker stop disagro_postgres_c
+
+sudo docker rm disagro_flask_c 
+sudo docker rm disagro_postgres_c 
+
+# 2.
+sudo docker ps -a
+
+# 3.
+sudo docker images
+
+# 4.
+sudo docker rmi disagro_flask:latest
+sudo docker rmi disagro_postgres:latest
+
+# sudo docker rmi 5901a1545b07
+
+# 5.
+sudo docker build -t disagro_flask .
+sudo docker run -d --name disagro_flask_c --network disagro_network -p 3000:3000 disagro_flask
+
+# 6.
+sudo docker exec -it disagro_flask_c bash
+
+# 7.
+sudo docker build -t disagro_postgres .
+sudo docker run -d --name disagro_postgres_c --network disagro_network -p 5432:5432 disagro_postgres
 
 
-1. Sociedades ( equivalente a empresa)
-2. Cuenta bancaria ( por empresa, moneda)
-3. Multi-usuario
-4. Multi-país
-5. Roles definidos
-6. Qué permita cargar soporte ( boleta, documento de pago)
-7. Disponible 24 horas
-8. Qué permita en un campo, registrar el número de recibo.
-9. La vista tiene qué incluir:  Banco, número de cuenta, fecha, número de boleta, monto.
-10.  
-10. Para busqueda, por lo menos tiene qué incluir: banco, número de boleta, número de cuenta.
- 
-11. Depurable.  Qué al utilizar una boleta, al guardar y documentar,  desaparezca o ya no esté disponible para uso.
- 
-12. Para consulta de finanzas:  Filtros por rangos de fecha, rango de valor, tipo de moneda, cuenta de bancos, tipo de movimiento.
- 
-13. Qué podamos descargar la base de datos, incluyendo las imágenes.
- 
-14. Al  momento de llamar una boleta,  qué nos muestre:  fecha, monto, tipo de movimiento, descripción.
- 
-15. Trabajamos con dos decimales, en todos los bancos.
- 
-16. Qué muestre únicamente lo qué ingresa a nuestras cuentas ( depósitos, transferencia, pagos con tarjeta, etc.)
- 
-Alfredo Exacto, restringirlo x roles 
- 
-17. Compartir a Manuel la nomenclatura por cada banco.
- 
-18. Qué permita hacer varias cargas durante el día, incluso cuando un usuario esté consultando una boleta.
- 
-19. Qué el sistema depure automáticamente si encuentra un registro duplicado, por ejemplo,  si durante un mismo día, al hacer varias cargas, no se dupliquen los registros.
- 
-20. Qué permita cargar el tipo de cambio del día.  
- 
-21. Qué tenga la opción  calculadora de tipo de cambio.
- 
-22. Rol de corrección y/o desasignar.  Nos sirve para poder anular registros qué se hicieron por error.  Un solo usuario país.
- 
-23. A nivel de usuario,  qué permita consultar vitácora por día o rango de fechas.
- 
-24. Qué se segmente por cuenta y moneda de la cuenta, mostrando el símbolo de la moneda.
- 
-25. Roles mínimos,  Finanzas, administración, de corrección, de consulta.
- 
-26. Super usuario.  Qué tiene acceso total a la herramienta, en todos los países.
- 
-27. Base de datos a otorgar:  Banco, cuenta, tipo de moneda, tipo de movimiento, sociedad(empresa).  Base de datos cliente con código y/o identificador fiscal.
- 
-28.  Nomenclatura de monedas( tres letras).
- 
-29. Qué Manuel nos comparta una propuesta, según nuestra reunión.  
- 
-30. Consideramos cuatro sesiones de capacitación.
- 
-31. Enviaremos a Manuel un formato estandarizado a nivel región.
- 
+## Reporte de conteo por usuario
+
+- Disponible desde el catálogo de reportes dentro de una planificación activa, bajo la opción `Conteo por usuario`.
+- Requiere seleccionar al menos un usuario captador. También permite incluir registros sin captura marcando la opción `Sin captador`.
+- Los filtros de ubicaciones y almacenes aceptan multiselección; al dejarlos vacíos el reporte utiliza todas las ubicaciones/almacenes planificados.
+- La tabla principal muestra artículo, descripción, cantidades planificadas vs. contadas, diferencia, últimas fechas de captura y el usuario responsable.
+- El panel lateral permite limpiar o restablecer filtros rápidamente y conserva chips removibles para indicar los filtros activos.
+- Los resultados pueden descargarse en Excel respetando los filtros aplicados.
+
+## Reporte consolidado cantidades/costo
+
+- Disponible en el catálogo como `Consolidado cantidades/costo`; fusiona los reportes de inventario físico y diferencias por costo.
+- Presenta en una sola tabla las columnas de cantidades (físico, sistema, diferencia) y sus equivalentes monetarios.
+- Respeta el estilo del reporte original (estructura por ubicación/artículo, totales por sección y formato “waffle”).
+- Incluye opción de exportación a Excel con los valores filtrados.
+
+## Reporte inventario con comentarios
+
+- Disponible en el catálogo como `Inventario con comentarios`; replica el reporte básico de diferencias agregando marcadores visuales de observaciones.
+- Cada línea de captación muestra un ícono de comentario cuando existen notas registradas; el tooltip expone un resumen rápido y la tabla inferior detalla la información completa.
+- El bloque “Comentarios registrados” lista artículo, ubicación, captador, fecha y texto capturado para vincular fácilmente la observación con la línea consolidada.
+- El resto de reportes se mantiene sin cambios; el indicador y la tabla adicional solo aparecen en este nuevo reporte.
