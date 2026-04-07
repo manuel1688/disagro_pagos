@@ -1,0 +1,416 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
+    
+    {% block title %}
+    <title>Captura</title>
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+
+<br>
+{% if planificacion_activa is none %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <strong>Advertencia!</strong> Actualmente, No hay planificación definida.
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{% endif %}
+
+<input type="hidden" id="input_planificacion_activa" value="{{planificacion_activa.ID}}">
+<input type="hidden" id="input_planificacion_version" value="{{ planificacion_activa.FECHA_ACTUALIZACION.isoformat() if planificacion_activa and planificacion_activa.FECHA_ACTUALIZACION else '' }}">
+<input type="hidden" id="input_fecha" data-nombre="FECHA" data-requerido="false" value="">
+
+{# Mantener el input oculto para el tipo de captura #}
+{% if captura %}
+  <input type="hidden" id="input_tipo_de_captura" value="{% if nuevo_articulo %}nuevo{% else %}captura{% endif %}" name="input_tipo_de_captura" data-nombre="TIPO_DE_CAPTURA" data-requerido="true">
+{% elif re_conteo %}
+  <input type="hidden" id="input_tipo_de_captura" value="reconteo" name="input_tipo_de_captura" data-nombre="TIPO_DE_CAPTURA" data-requerido="true">
+{% endif %}
+<div class="container-fluid">
+    <!-- <span class="font-weight-bold">ÁREA: </span> <span class="badge badge-danger" id="etiqueta_area"></span> -->
+    <div class="row">
+      <div class="col-md-8">
+        <div class="container-fluid agregar-a-grid jumbotron">
+        {% set modo = '' %}
+        {% set modo_class = 'badge-planificacion-info' %}
+        {% if captura %}
+          {% if nuevo_articulo %}
+            {% set modo = 'Nuevo artículo' %}
+            {% set modo_class = 'badge-planificacion-warning' %}
+          {% else %}
+            {% set modo = 'Toma física' %}
+            {% set modo_class = 'badge-planificacion-info' %}
+          {% endif %}
+        {% elif re_conteo %}
+          {% set modo = 'Reconteo' %}
+          {% set modo_class = 'badge-planificacion-danger' %}
+        {% endif %}
+        {% if modo %}
+          <span class="badge planificacion-mode-badge {{ modo_class }}">{{ modo }}</span>
+        {% endif %}
+        <div class="row">
+          <div class="col-md-8 mb-3">
+            <div class="form-check">
+              <input id="check_input_limpiar" class="form-check-input" type="checkbox" id="limpiarCampos" checked>
+              <label class="form-check-label" for="limpiarCampos">
+                Limpiar campos después de enviar
+              </label>
+            </div>
+          </div>
+          <div class="col-md-2 mb-3">
+            <button type="button" class="btn btn-danger btn-sm" id="boton_limpiar_campos">
+              <i class="fa fa-eraser"></i> Limpiar
+            </button>
+          </div>
+          <div class="col-md-2 col-12 mb-2">
+            <button type="button" class="btn btn-primary btn-sm w-100" id="boton_enter">
+              <i class="fa fa-keyboard"></i> Enter <i class="fa fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+        
+          <div class="row">
+            <div class="col-md-12">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">ARTÍCULO</span>
+                </div>
+                <input
+                  aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+                  id="input_articulo" type="text" value="" name="input_articulo" 
+                  list="articulos" data-nombre="ARTICULO" data-requerido="true"
+                  data-limpiar="true"
+                  class="form-control campo_codigo input_formulario" 
+                  autocomplete="off"
+                  {% if planificacion_activa is none %}
+                    disabled
+                  {% endif %}>
+                <datalist id="articulos"></datalist>
+              </div> 
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-12">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">DESCRIPCIÓN</span>
+                </div>
+                <input {% if nuevo_articulo %}{% else %}disabled{% endif %} data-nombre="DESCRIPCION" data-requerido="true" data-limpiar="true" aria-label="Default" aria-describedby="inputGroup-sizing-default" id="input_descripcion" type="text" value="" name="input_descripcion" class="form-control campo_codigo input_formulario info-cliente" autocomplete="off">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">UBICACIÓN</span>
+                </div>
+                <input 
+                  id="input_ubicacion" 
+                  data-historico="false"
+                  data-ultimo_valor="ubicaciones"  
+                  data-requerido="true" 
+                  data-nombre="UBICACION"
+                  autocomplete="off" 
+                  type="text" 
+                  value="" 
+                  name="input_ubicacion" 
+                  list="ubicaciones" 
+                  class="form-control campo_codigo input_formulario">
+                <datalist id="ubicaciones">
+                  {% for ubicacion in ubicaciones %}
+                    <option data-codigo="{{ubicacion.UBICACION}}" value="{{ubicacion.UBICACION}}">{{ubicacion.DESCRIPCION}} | {{ubicacion.UBICACION}}</option>
+                  {% endfor %}
+                </datalist>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">ALMACÉN</span>
+                </div>
+                <input id="input_almacen" type="text"  
+                  disabled
+                  data-requerido="true"
+                  data-historico="false"
+                  data-ultimo_valor="area_ultimo_valor"  
+                  data-nombre="ALMACEN" autocomplete="off" 
+                  data-requerido="false" value="" name="input_almacen"  
+                  list="almacenes" class="form-control campo_codigo input_formulario">
+                <datalist id="almacenes">
+                  {% for almacen in almacenes %}
+                    <option data-codigo="{{almacen.ALMACEN}}" value="{{almacen.ALMACEN}}">{{almacen.DESCRIPCION}} | {{almacen.ALMACEN}}</option>
+                  {% endfor %}
+                </datalist>
+              </div>
+            </div>
+          </div>          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">LOTE</span>
+                </div>
+                <input
+                  disabled
+                  aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+                  id="input_lote" type="text" value="" name="input_lote" 
+                  list="lotes" data-nombre="LOTE" data-requerido="false"
+                  data-limpiar="true"
+                  class="form-control campo_codigo input_formulario" 
+                  autocomplete="off">
+                <datalist id="lotes"></datalist>
+              </div> 
+            </div>
+            <div class="col-md-6">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">FECHA DE EXPIRACIÓN</span>
+                </div>
+                <!-- <input type="date" class="form-control" name="fecha_i" id="fecha_i" autocomplete="off" required min="2021-01-01" max="2026-12-31"> -->
+                <input
+                  disabled
+                  aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+                  id="input_fecha_expiracion" type="text" value="" name="input_fecha_expiracion" 
+                  list="fechas_de_expiracion" data-nombre="FECHA_EXPIRACION" data-requerido="false"
+                  data-limpiar="true"
+                  class="form-control campo_codigo input_formulario datepicker" 
+                  autocomplete="off"
+                  pattern="\d{2}/\d{2}/\d{4}" placeholder="dd/mm/yyyy">
+                <datalist id="fechas_de_expiracion"></datalist>
+              </div> 
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">SERIE</span>
+                </div>
+                <input
+                  aria-label="Default" aria-describedby="inputGroup-sizing-default"
+                  id="input_serie" type="text" value="" name="input_serie"
+                  data-nombre="SERIE" data-requerido="false"
+                  data-limpiar="true"
+                  class="form-control campo_codigo input_formulario"
+                  autocomplete="off">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">MODELO</span>
+                </div>
+                <input
+                  aria-label="Default" aria-describedby="inputGroup-sizing-default"
+                  id="input_modelo" type="text" value="" name="input_modelo"
+                  data-nombre="MODELO" data-requerido="false"
+                  data-limpiar="true"
+                  class="form-control campo_codigo input_formulario"
+                  autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div id="contenedor-estado" class="row">
+            <div class="col-md-6">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">ESTADO</span>
+                </div>
+                <input
+                  aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+                  id="input_estado" type="text" value="" name="input_estado" 
+                  list="estados" data-nombre="ESTADO" data-requerido="false"
+                  data-limpiar="true"
+                  class="form-control campo_codigo input_formulario" 
+                  autocomplete="off">
+                <datalist id="estados"></datalist>
+              </div> 
+            </div>
+            <div class="col-md-6">
+              <div class="input-group mb-2">
+                <div class="input-group-prepend">
+                  <span class="btn btn-primary" type="button">Imagen</span> 
+                </div>
+                <div class="custom-file">
+                  <label type="label" id="label_adjunto_estado" class="custom-file-label" for="input_adjunto_estado">Choose file</label>
+                  <input type="file" class="custom-file-input" data-nombre="ADJUNTO_ESTADO" id="input_adjunto_estado" data-requerido="false" aria-describedby="area_adjunto_estado" accept=".png, .jpg, .jpeg, .gif, .bmp, .webp" capture="environment">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row {% if re_conteo %}d-none{% endif %}">
+            <div class="col-12">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">OBSERVACIÓN</span>
+                </div>
+                <textarea id="input_observacion" data-nombre="OBSERVACION" data-requerido="false" data-limpiar="true" rows="1" maxlength="50"
+                  class="form-control campo_codigo input_formulario" autocomplete="off" placeholder="Comentarios opcionales"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="row {% if re_conteo %}d-none{% endif %}">
+            <div class="col-12">
+              <div class="input-group input-group-sm mb-2 d-flex align-items-center gap-3" style="max-width: 280px;">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">CANTIDAD</span>
+                </div>
+                <input disabled id="input_cantidad" data-nombre="CANTIDAD" data-requerido="{% if captura %}true{% else %}false{% endif %}" data-limpiar="true" type="number" value="" 
+                  name="input_cantidad" min="1" class="form-control campo_codigo input_formulario text-end" autocomplete="off">
+                <div class="input-group-append" style="margin-left: 1.5rem;">
+                  <div class="form-check form-switch form-switch-sm mb-0">
+                    <input class="form-check-input" type="checkbox" id="input_en_transito" data-nombre="EN_TRANSITO" data-requerido="false" data-limpiar="true">
+                    <label class="form-check-label small mb-0" for="input_en_transito" style="white-space: nowrap;">En&nbsp;tránsito</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row {% if captura %}d-none{% endif %}">
+            <div class="col-md-5">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">DIFERENCIA</span>
+                </div>
+                <input id="input_diferencia" data-nombre="DIFERENCIA" data-requerido="{% if reconteo %}true{% else %}false{% endif %}" data-limpiar="true" type="number" value="" 
+                name="input_diferencia" min="0" class="form-control campo_codigo input_formulario" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="row {% if captura %}d-none{% endif %}">
+            <div class="col-md-5">
+              <div class="input-group input-group-sm mb-2">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">TIPO DE DIFERENCIA</span>
+                </div>
+                <input
+                  aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+                  id="input_tipo_diferencia" type="text" value="" name="tipo_diferencia" 
+                  list="tipos_diferencia" data-nombre="TIPO_DIFERENCIA" data-requerido="{% if reconteo %}true{% else %}false{% endif %}"
+                  data-limpiar="true"
+                  class="form-control campo_codigo input_formulario" 
+                  autocomplete="off">
+                  <datalist id="tipos_diferencia">
+                    <option class="opciones" value="SOBRANTE" label="Sobrante">Sobrante</option>
+                    <option class="opciones" value="FALTANTE" label="Faltante">Faltante</option>
+                  </datalist>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-8">
+            </div>
+            <div class="col-md-4">
+              <div class="input-group input-group-sm mb-2">
+                <button id="boton_enviar_captura" type="button" class="btn btn-outline-dark btn-sm btn-block active">Enviar</button>
+                <button disabled id="boton_enviar_captura_loading" type="button" class="btn btn-outline-dark btn-sm btn-block active d-none">
+                  Enviando ... 
+                  <div class="spinner-border text-light" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        {% if planificacion_activa %}
+          {% if captura %}
+            {% set alerta_captura_clase = 'alert-info' %}
+            {% if nuevo_articulo %}
+              {% set alerta_captura_clase = 'alert-danger' %}
+            {% endif %}
+            <div class="alert {{ alerta_captura_clase }} alert-dismissible fade show auto-dismiss" role="alert">
+              <strong>Formulario de {% if nuevo_articulo %}nuevo artículo{% else %}captación{% endif %},</strong> proceso planificado por {{planificacion_activa.USUARIO}}. (Número de planificación {{planificacion_activa.ID}}).
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% endif %}
+          {% if re_conteo %}
+            <div class="alert alert-danger alert-dismissible fade show auto-dismiss" role="alert">
+              <strong>Formulario de reconteo,</strong> proceso planificado por {{planificacion_activa.USUARIO}}. (Número de planificación {{planificacion_activa.ID}}).
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          {% endif %}
+        {% endif %}
+        <div class="jumbotron">
+          <div class="input-group input-group-sm mb-2">
+            <div class="input-group-prepend">
+              <span class="input-group-text btn-primary item_info" id="inputGroup-sizing-sm">USUARIO</span>
+            </div>
+            <input disabled id="input_usuario" data-nombre="USUARIO" data-requerido="true" type="text" 
+            class="form-control info-cliente" aria-label="Small" aria-describedby="inputGroup-sizing-sm" value="{{g.user.usuario}}">
+          </div>
+          <div class="input-group input-group-sm mb-2">
+            <div class="input-group-prepend">
+              <span class="input-group-text btn-primary item_info" id="inputGroup-sizing-sm">NÚMERO</span>
+            </div>
+            <input disabled class="form-control info-cliente" type="text" value="{{ planificacion_activa.ID }}">
+          </div>
+          <div class="input-group input-group-sm mb-2">
+            <div class="input-group-prepend">
+              <span class="input-group-text btn-primary item_info" id="inputGroup-sizing-sm">PLANIFICACIÓN</span>
+            </div>
+            <input disabled class="form-control info-cliente" type="text" value="{{ planificacion_activa.NOMBRE or 'Sin nombre' }}">
+          </div>
+          <div class="input-group input-group-sm mb-2">
+            <div class="input-group-prepend">
+              <span class="input-group-text btn-primary item_info" id="inputGroup-sizing-sm">CORRELATIVO</span>
+            </div>
+            <input disabled class="form-control info-cliente" type="text" value="{{ planificacion_activa.CORRELATIVO or '-' }}">
+          </div>
+          <div class="btn-group btn-group-sm d-flex mt-2" role="group" aria-label="acciones planificacion">
+            {% if nuevo_articulo %}
+            <a class="btn btn-outline-dark" href="{{ url_for('inventario_bp.captura_por_id', planificacion_id=planificacion_activa.ID) }}">
+              <i class="fa fa-arrow-left"></i> Volver a captura
+            </a>
+            {% endif %}
+            <a class="btn btn-outline-dark" href="/inventario/captaciones/{{planificacion_activa.ID}}">
+              <span class="font-weight-bold">Capturas</span>
+            </a>
+            {% if captura and not nuevo_articulo %}
+            <a class="btn btn-outline-dark" href="{{ url_for('inventario_bp.nuevo_por_id', planificacion_id=planificacion_activa.ID) }}">
+              <span class="font-weight-bold">Nuevo artículo</span>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <br> 
+    <div class="row">
+      <div class="col-md-12">
+        <h6>Últimas 10 capturas registradas</h6>
+        <div class="list-group" id="lista_de_capturas">
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+<br>
+<br>
+<div id="contenedor_de_mensaje"></div>
+<script>
+  window.setTimeout(function () {
+    document.querySelectorAll('.alert.auto-dismiss').forEach(function(alert) {
+      alert.classList.remove('show');
+      alert.classList.add('fade');
+      window.setTimeout(function(){ alert.remove(); }, 500);
+    });
+  }, 8000);
+</script>
+<script src="{{ url_for('static', filename='js/common.js')}}"></script>
+<script type="module" src="{{ url_for('static', filename='js/inventario.js')}}"></script>
+{% endblock %}

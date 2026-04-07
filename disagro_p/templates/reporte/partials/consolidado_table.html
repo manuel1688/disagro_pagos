@@ -1,0 +1,164 @@
+<div class="row">
+   <div class="col-12 ritz">
+      <table class="waffle" cellspacing="0" cellpadding="0">
+         <thead>
+            <tr>
+               <th class="row-header freezebar-origin-ltr"></th>
+               <th id="0C0" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C1" style="width:260px;" class="column-headers-background"></th>
+               <th id="0C2" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C3" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C4" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C5" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C6" style="width:108px;" class="column-headers-background"></th>
+               <th id="0C7" style="width:95px;" class="column-headers-background"></th>
+               <th id="0C8" style="width:95px;" class="column-headers-background"></th>
+               <th id="0C9" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C10" style="width:120px;" class="column-headers-background"></th>
+               <th id="0C11" style="width:120px;" class="column-headers-background"></th>
+               <th id="0C12" style="width:120px;" class="column-headers-background"></th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr style="height: 20px">
+               <th class="row-headers-background" style="height: 20px;">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s0" dir="ltr" colspan="13">
+                  <h4>REPORTE CONSOLIDADO CANTIDADES / COSTO</h4>
+               </td>
+            </tr>
+            <tr style="height: 20px">
+               <th class="row-headers-background" style="height: 20px;">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s1" dir="ltr" colspan="13"></td>
+            </tr>
+            <tr style="height: 20px">
+               <th class="row-headers-background" style="height: 20px;">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s2" dir="ltr" colspan="10"></td>
+               <td class="s3" dir="ltr" colspan="3"><span style="font-weight:bold;">FECHA</span>: {{ date }}</td>
+            </tr>
+
+            {% for ubicacion in diferencias.captaciones_por_ubicacion %}
+               <tr style="height: 20px">
+                  <th class="row-headers-background" style="height: 20px;">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s1" dir="ltr" colspan="13"><span style="font-weight:bold;">UBICACIÓN</span>: {{ ubicacion.UBICACION }}</td>
+               </tr>
+               <tr style="height: 20px">
+                  <th class="row-headers-background" style="height: 20px;">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s4" dir="ltr">ARTICULO</td>
+                  <td class="s4" dir="ltr">DESCRIPCION</td>
+                  <td class="s5" dir="ltr">ALMACEN</td>
+                  <td class="s5" dir="ltr">LOTE</td>
+                  <td class="s5" dir="ltr">SERIE</td>
+                  <td class="s5" dir="ltr">MODELO</td>
+                  <td class="s5" dir="ltr">F. EXPIRACION</td>
+                  <td class="s5" dir="ltr">FISICO</td>
+                  <td class="s5" dir="ltr">SISTEMA</td>
+                  <td class="s5" dir="ltr">DIFERENCIA</td>
+                  <td class="s5" dir="ltr">FISICO (COSTO)</td>
+                  <td class="s5" dir="ltr">SISTEMA (COSTO)</td>
+                  <td class="s5" dir="ltr">DIF. (COSTO)</td>
+               </tr>
+
+               {% for art in ubicacion.ARTICULOS %}
+                  <tr style="height: 20px">
+                     <th class="row-headers-background" style="height: 20px;">
+                        <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                     </th>
+                     <td class="s6" dir="ltr">{{ art.ARTICULO }}</td>
+                     <td class="s7" dir="ltr" colspan="12">{{ art.DESCRIPCION }}</td>
+                  </tr>
+                  {% for captacion in art.CAPTACIONES %}
+                     <tr style="height: 20px">
+                        <th class="row-headers-background" style="height: 20px;">
+                           <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                        </th>
+                        <td class="s10" dir="ltr" colspan="2"></td>
+                        <td class="s10" dir="ltr">{{ captacion.ALMACEN }}</td>
+                        <td class="s10" dir="ltr">{{ captacion.LOTE or '' }}</td>
+                        <td class="s10" dir="ltr">{{ captacion.SERIE or '' }}</td>
+                        <td class="s10" dir="ltr">{{ captacion.MODELO or '' }}</td>
+                        <td class="s10" dir="ltr">{{ captacion.FECHA_EXPIRACION_STR or '' }}</td>
+                        <td class="s10" dir="ltr">{{ captacion.FISICO }}</td>
+                        <td class="s10" dir="ltr">{{ captacion.SISTEMA }}</td>
+                        <td class="s10" dir="ltr">{{ captacion.DIFERENCIA }}</td>
+                        <td class="s10" dir="ltr">${{ '%.2f'|format(captacion.FISICO_COSTO) }}</td>
+                        <td class="s10" dir="ltr">${{ '%.2f'|format(captacion.SISTEMA_COSTO) }}</td>
+                        <td class="s10" dir="ltr">${{ '%.2f'|format(captacion.DIFERENCIA_COSTO) }}</td>
+                     </tr>
+                  {% endfor %}
+
+                  <tr style="height: 20px">
+                     <th class="row-headers-background" style="height: 20px;">
+                        <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                     </th>
+                     <td class="s8" colspan="7"></td>
+                     <td class="s12">{{ art.TOTAL_FISICO }}</td>
+                     <td class="s12">{{ art.TOTAL_SISTEMA }}</td>
+                     <td class="s12">{{ art.TOTAL_DIFERENCIA }}</td>
+                     <td class="s12">${{ '%.2f'|format(art.TOTAL_FISICO_COSTO) }}</td>
+                     <td class="s12">${{ '%.2f'|format(art.TOTAL_SISTEMA_COSTO) }}</td>
+                     <td class="s12">${{ '%.2f'|format(art.TOTAL_DIFERENCIA_COSTO) }}</td>
+                  </tr>
+               {% endfor %}
+               <tr style="height: 20px">
+                  <th class="row-headers-background" style="height: 20px;">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s5" colspan="7">TOTAL</td>
+                  <td class="s5">{{ ubicacion.TOTAL_FISICO }}</td>
+                  <td class="s5">{{ ubicacion.TOTAL_SISTEMA }}</td>
+                  <td class="s5">{{ ubicacion.TOTAL_DIFERENCIA }}</td>
+                  <td class="s5">${{ '%.2f'|format(ubicacion.TOTAL_FISICO_COSTO) }}</td>
+                  <td class="s5">${{ '%.2f'|format(ubicacion.TOTAL_SISTEMA_COSTO) }}</td>
+                  <td class="s5">${{ '%.2f'|format(ubicacion.TOTAL_DIFERENCIA_COSTO) }}</td>
+               </tr>
+            {% endfor %}
+            <tr style="height: 20px">
+               <th class="row-headers-background" style="height: 20px;">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s21" colspan="7">DIFERENCIAS TOTAL</td>
+               <td class="s21"></td>
+               <td class="s21"></td>
+               <td class="s21">{{ diferencias.DIFERENCIA_TOTAL }}</td>
+               <td class="s21"></td>
+               <td class="s21"></td>
+               <td class="s21">${{ '%.2f'|format(diferencias.DIFERENCIA_TOTAL_COSTO) }}</td>
+            </tr>
+         </tbody>
+      </table>
+   </div>
+</div>
+
+<div class="signature-section print-section">
+   <h5 class="signature-section__title">Firmas de responsabilidad</h5>
+   <p class="signature-section__note">Estas firmas certifican la revisión, aprobación y custodia de los resultados del inventario físico.</p>
+   <p class="signature-section__approved">Aprobado digitalmente por: {{ usuario_aprobacion or '________________' }}{% if fecha_aprobacion %} el {{ fecha_aprobacion.strftime("%d/%m/%Y %H:%M") }}{% endif %}</p>
+   <div class="signature-section__grid">
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Jefe de Inventario</span>
+      </div>
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Supervisor de Almacén</span>
+      </div>
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Gerente Financiero</span>
+      </div>
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Auditor Interno</span>
+      </div>
+   </div>
+</div>

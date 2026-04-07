@@ -1,0 +1,354 @@
+{% if solo_nuevos and sin_datos %}
+<div class="row mt-4">
+   <div class="col-12">
+      <div class="alert alert-info" role="alert">
+         No se registraron artículos nuevos en esta planificación.
+      </div>
+   </div>
+</div>
+{% endif %}
+
+<div class="row" {% if solo_nuevos and sin_datos %}style="display:none;"{% endif %}>
+   <div class="col-12 ritz">
+      {% set es_reporte_comentarios = (selected_report | default('')) == 'comentarios' %}
+      {% set comentarios_resumen_list = comentarios_resumen if es_reporte_comentarios and comentarios_resumen is defined else [] %}
+      {% set total_comentarios = comentarios_totales if es_reporte_comentarios and comentarios_totales is defined else (comentarios_resumen_list | length) %}
+      <table class="waffle" cellspacing="0" cellpadding="0">
+         <thead>
+            <tr>
+               <th class="row-header freezebar-origin-ltr"></th>
+               <th id="0C0" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C1" style="width:285px;" class="column-headers-background"></th>
+               <th id="0C2" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C3" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C4" style="width:104px;" class="column-headers-background"></th>
+               <th id="0C5" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C6" style="width:108px;" class="column-headers-background"></th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr style="height: 20px">
+               <th id="0R0" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s0" dir="ltr" colspan="10">
+                  <h4>
+                     {% if solo_nuevos %}
+                        NUEVOS ARTÍCULOS
+                     {% else %}
+                        REPORTE DE INVENTARIO FÍSICO
+                     {% endif %}
+                     {% if costo %}
+                        (Costos)
+                     {% endif %}
+                  </h4>
+               </td>
+            </tr>
+            <tr style="height: 20px">
+               <th id="0R1" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s1" dir="ltr" colspan="10"></td>
+            </tr>
+            <tr style="height: 20px">
+               <th id="0R2" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s2" dir="ltr" colspan="8"></td>
+               <td class="s3" dir="ltr" colspan="2"><span style="font-weight:bold;">FECHA DE LA PLANIFICACIÓN</span>: {{ date.strftime("%d/%m/%Y %H:%M:%S") if date else 'N/A' }}</td>
+            </tr>
+            <tr style="height: 20px">
+               <th id="0R2b" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s2" dir="ltr" colspan="8"></td>
+               <td class="s3" dir="ltr" colspan="2"><span style="font-weight:bold;">FECHA DEL REPORTE</span>: <span id="fecha-reporte">--/--/---- --:--:--</span></td>
+            </tr>
+
+            {% for ubicacion in diferencias.captaciones_por_ubicacion %}
+               <tr style="height: 20px">
+                  <th id="0R3" style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s1" dir="ltr" colspan="10"><span style="font-weight:bold;">UBICAICIÓN</span>: {{ ubicacion.UBICACION }}</td>
+               </tr>
+               <tr style="height: 20px">
+                  <th id="0R4" style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s4" dir="ltr">ARTICULO</td>
+                  <td class="s4" dir="ltr">DESCRIPCION</td>
+                  <td class="s5" dir="ltr">ALMACEN</td>
+                  <td class="s5" dir="ltr">LOTE</td>
+                  <td class="s5" dir="ltr">SERIE</td>
+                  <td class="s5" dir="ltr">MODELO</td>
+                  <td class="s5" dir="ltr">F. EXPIRACION</td>
+                  <td class="s5" dir="ltr">FISICO</td>
+                  <td class="s5" dir="ltr">SISTEMA</td>
+                  <td class="s5" dir="ltr">DIFERENCIA</td>
+               </tr>
+
+               {% for art in ubicacion.ARTICULOS %}
+                  <tr style="height: 20px">
+                     <th id="0R5" style="height: 20px;" class="row-headers-background">
+                        <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                     </th>
+                     <td class="s6" dir="ltr">{{art.ARTICULO}}</td>
+                     <td class="s7" dir="ltr">{{art.DESCRIPCION}}</td>
+                     <td class="s8" dir="ltr" colspan="8"></td>
+                  </tr>
+                  {% set captaciones_length = art.CAPTACIONES | length %}
+                  {% set captaciones_nuevas_length = art.CAPTACIONES_NUEVAS | length %}
+                  {% if captaciones_nuevas_length > 0 %}
+                     {% set total_length = captaciones_length + captaciones_nuevas_length + 1 %}
+                  {% else %}
+                     {% set total_length = captaciones_length + captaciones_nuevas_length %}
+                  {% endif %}
+                  {% for captacion in art.CAPTACIONES %}
+                     {% set comentario_tooltip = captacion.COMENTARIOS_INLINE | join(' · ') %}
+                     {% set comentario_total = captacion.COMENTARIOS_TOTAL %}
+                     {% set mostrar_indicador = es_reporte_comentarios and captacion.TIENE_COMENTARIO %}
+                     <tr style="height: 20px">
+                        <th id="0R6" style="height: 20px;" class="row-headers-background">
+                           <div class="row-header-wrapper{% if mostrar_indicador %} row-header-wrapper--with-comment{% endif %}" style="line-height: 20px">
+                              {% if mostrar_indicador %}
+                                 <span class="comment-indicator comment-indicator--row-header" role="img" aria-label="Captación con comentarios" title="{{ comentario_tooltip if comentario_tooltip else 'Captación con comentarios registrados' }}">
+                                    <i class="fa fa-comment-dots" aria-hidden="true"></i>
+                                    {% if comentario_total > 1 %}
+                                       <span class="comment-indicator__count">{{ comentario_total }}</span>
+                                    {% endif %}
+                                 </span>
+                              {% endif %}
+                              {% if captacion.RECONTEO == "SI" %}R{% else %}|{% endif %}
+                           </div>
+                        </th>
+
+                        {% if loop.first %}
+                           <td class="s9" colspan="2" rowspan="{{total_length}}"></td>
+                        {% endif %}
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.ALMACEN}}</td>
+                        {% if captacion.LOTE is none %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr"></td>
+                        {% else %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.LOTE}}</td>
+                        {% endif %}
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.SERIE or ''}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.MODELO or ''}}</td>
+                        {% if captacion.FECHA_EXPIRACION is none %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr"></td>
+                        {% else %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.FECHA_EXPIRACION.strftime("%d/%m/%Y")}}</td>
+                        {% endif %}
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{% if costo %}${% endif %} {{captacion.FISICO}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{% if costo %}${% endif %} {{captacion.SISTEMA}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}">{% if costo %}${% endif %} {{captacion.DIFERENCIA}}</td>
+                     </tr>
+                  {% endfor %}
+
+                  {% if captaciones_nuevas_length > 0 %}
+                  <tr style="height: 20px">
+                     <th id="0R8" style="height: 20px;" class="row-headers-background">
+                        <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                     </th>
+                     <td class="s10 nuevo" dir="ltr">Nuevo</td>
+                  </tr>
+                  {% endif %}
+
+                  {% for captacion in art.CAPTACIONES_NUEVAS %}
+                     {% set comentario_tooltip = captacion.COMENTARIOS_INLINE | join(' · ') %}
+                     {% set comentario_total = captacion.COMENTARIOS_TOTAL %}
+                     {% set mostrar_indicador = es_reporte_comentarios and captacion.TIENE_COMENTARIO %}
+                     <tr style="height: 20px">
+                        <th id="0R6" style="height: 20px;" class="row-headers-background">
+                           <div class="row-header-wrapper{% if mostrar_indicador %} row-header-wrapper--with-comment{% endif %}" style="line-height: 20px">
+                              {% if mostrar_indicador %}
+                                 <span class="comment-indicator comment-indicator--row-header" role="img" aria-label="Captación con comentarios" title="{{ comentario_tooltip if comentario_tooltip else 'Captación con comentarios registrados' }}">
+                                    <i class="fa fa-comment-dots" aria-hidden="true"></i>
+                                    {% if comentario_total > 1 %}
+                                       <span class="comment-indicator__count">{{ comentario_total }}</span>
+                                    {% endif %}
+                                 </span>
+                              {% endif %}
+                              {% if captacion.RECONTEO == "SI" %}R{% else %}|{% endif %}
+                           </div>
+                        </th>
+
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.ALMACEN}}</td>
+                        {% if captacion.LOTE is none %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr"></td>
+                        {% else %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.LOTE}}</td>
+                        {% endif %}
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.SERIE or ''}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.MODELO or ''}}</td>
+                        {% if captacion.FECHA_EXPIRACION is none %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr"></td>
+                        {% else %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.FECHA_EXPIRACION.strftime("%d/%m/%Y")}}</td>
+                        {% endif %}
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{% if costo %}${% endif %} {{captacion.FISICO}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{% if costo %}${% endif %} {{captacion.SISTEMA}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}">{% if costo %}${% endif %} {{captacion.DIFERENCIA}}</td>
+                     </tr>
+                  {% endfor %}
+
+                  <tr style="height: 20px">
+                     <th id="0R9" style="height: 20px;" class="row-headers-background">
+                        <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                     </th>
+                     <td class="s8" colspan="7"></td>
+                     <td class="s12">{% if costo %}${% endif %} {{art.TOTAL_FISICO}}</td>
+                     <td class="s12" dir="ltr">{% if costo %}${% endif %} {{art.TOTAL_SISTEMA}}</td>
+                     <td class="s12">{% if costo %}${% endif %} {{art.TOTAL_DIFERENCIA}}</td>
+                  </tr>
+
+               {% endfor %}
+               <tr style="height: 20px">
+                  <th id="0R27" style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s5" colspan="7">TOTAL</td>
+                  <td class="s5">{{ubicacion.TOTAL_FISICO}}</td>
+                  <td class="s5">{{ubicacion.TOTAL_SISTEMA}}</td>
+                  <td class="s5">{{ubicacion.TOTAL_DIFERENCIA}}</td>
+               </tr>
+            {% endfor %}
+            <tr style="height: 20px">
+               <th id="0R53" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s21" colspan="7">DIFERENCIAS TOTAL</td>
+               <td class="s21"></td>
+               <td class="s21"></td>
+               <td class="s21">{{diferencias.DIFERENCIA_TOTAL}}</td>
+            </tr>
+         </tbody>
+      </table>
+   </div>
+</div>
+
+{% if es_reporte_comentarios %}
+<div class="row mt-4 comentarios-resumen">
+   <div class="col-12">
+      {% if comentarios_resumen_list %}
+      <div class="comentarios-resumen__header">
+         <h5 class="comentarios-resumen__title">Comentarios registrados</h5>
+         <span class="comentarios-resumen__badge" aria-label="Total de comentarios">{{ total_comentarios }}</span>
+      </div>
+      <p class="comentarios-resumen__note">Detalle de las captaciones con observaciones vinculadas a la tabla superior.</p>
+      <div class="ritz mt-3">
+         <table class="waffle" cellspacing="0" cellpadding="0">
+            <thead>
+               <tr>
+                  <th class="row-header freezebar-origin-ltr"></th>
+                  <th id="1C0" style="width:110px;" class="column-headers-background"></th>
+                  <th id="1C1" style="width:90px;" class="column-headers-background"></th>
+                  <th id="1C2" style="width:120px;" class="column-headers-background"></th>
+                  <th id="1C3" style="width:180px;" class="column-headers-background"></th>
+                  <th id="1C4" style="width:100px;" class="column-headers-background"></th>
+                  <th id="1C5" style="width:100px;" class="column-headers-background"></th>
+                  <th id="1C6" style="width:80px;" class="column-headers-background"></th>
+                  <th id="1C7" style="width:120px;" class="column-headers-background"></th>
+                  <th id="1C8" style="width:130px;" class="column-headers-background"></th>
+                  <th id="1C9" style="width:220px;" class="column-headers-background"></th>
+               </tr>
+            </thead>
+            <tbody>
+               <tr style="height: 20px">
+                  <th style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s0" dir="ltr" colspan="10">
+                     <h4>DETALLE DE COMENTARIOS</h4>
+                  </td>
+               </tr>
+               <tr style="height: 20px">
+                  <th style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s1" dir="ltr" colspan="10"></td>
+               </tr>
+               <tr style="height: 20px">
+                  <th style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s4" dir="ltr">UBICACIÓN</td>
+                  <td class="s4" dir="ltr">ALMACÉN</td>
+                  <td class="s4" dir="ltr">ARTÍCULO</td>
+                  <td class="s4" dir="ltr">DESCRIPCIÓN</td>
+                  <td class="s4" dir="ltr">LOTE</td>
+                  <td class="s4" dir="ltr">SERIE</td>
+                  <td class="s4" dir="ltr">CANT.</td>
+                  <td class="s4" dir="ltr">USUARIO</td>
+                  <td class="s4" dir="ltr">FECHA</td>
+                  <td class="s4" dir="ltr">COMENTARIO</td>
+               </tr>
+               {% for comentario in comentarios_resumen_list %}
+                  {% if comentario.FECHA %}
+                     {% set fecha_captura = comentario.FECHA.strftime('%d/%m/%Y %H:%M') %}
+                  {% else %}
+                     {% set fecha_captura = '-' %}
+                  {% endif %}
+               <tr style="height: 20px">
+                  <th style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s10" dir="ltr">{{ comentario.UBICACION or '' }}</td>
+                  <td class="s10" dir="ltr">{{ comentario.ALMACEN or '' }}</td>
+                  <td class="s10" dir="ltr">{{ comentario.ARTICULO or '' }}</td>
+                  <td class="s10" dir="ltr">{{ comentario.DESCRIPCION or '' }}</td>
+                  <td class="s10" dir="ltr">{{ comentario.LOTE or '' }}</td>
+                  <td class="s10" dir="ltr">{{ comentario.SERIE or '' }}</td>
+                  <td class="s10" dir="ltr">{{ comentario.CANTIDAD if comentario.CANTIDAD is not none else '' }}</td>
+                  <td class="s10" dir="ltr">{{ comentario.USUARIO or '' }}</td>
+                  <td class="s10" dir="ltr">{{ fecha_captura }}</td>
+                  <td class="s8" dir="ltr">{{ comentario.OBSERVACION | default('', true) }}</td>
+               </tr>
+               {% endfor %}
+               <tr style="height: 20px">
+                  <th style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s5" dir="ltr" colspan="9">TOTAL COMENTARIOS</td>
+                  <td class="s5" dir="ltr">{{ total_comentarios }}</td>
+               </tr>
+            </tbody>
+         </table>
+      </div>
+      {% else %}
+      <div class="alert alert-secondary" role="alert">
+         No se registraron comentarios en las captaciones de esta planificación.
+      </div>
+      {% endif %}
+   </div>
+</div>
+{% endif %}
+
+  <div class="signature-section print-section">
+   <h5 class="signature-section__title">Firmas de responsabilidad</h5>
+   <p class="signature-section__note">Estas firmas certifican la revisión, aprobación y custodia de los resultados del inventario físico.</p>
+   <p class="signature-section__approved">Aprobado digitalmente por: {{ usuario_aprobacion or '________________' }}{% if fecha_aprobacion %} el {{ fecha_aprobacion.strftime("%d/%m/%Y %H:%M") }}{% endif %}</p>
+   <div class="signature-section__grid">
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Jefe de Inventario</span>
+      </div>
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Supervisor de Almacén</span>
+      </div>
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Gerente Financiero</span>
+      </div>
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Auditor Interno</span>
+      </div>
+   </div>
+</div>
+
+<script type="module">
+import { getCurrentDateTime } from "/static/js/timezone_utils.js";
+document.getElementById('fecha-reporte').textContent = getCurrentDateTime();
+</script>

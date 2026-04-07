@@ -1,0 +1,90 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <title>Configuración de maestros</title>
+{% endblock %} 
+
+{% block content %}
+<br>
+
+
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-6">
+      <a class="btn btn-outline-dark btn-sm" href="/usuario/configuracion">
+        <i class="fas fa-arrow-left"></i> 
+      </a>
+    </div>
+  </div>
+</div>
+<br>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-info alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+<br>
+<div class="container">
+  <h3>Detalle de usuario</h3>
+  <br>
+  <form method="POST" action="/usuario/actualizar_contrasena">
+    <!-- Puedes agregar aquí un token CSRF si es necesario -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="input-group input-group-sm mb-2">
+          <div class="input-group-prepend">
+            <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">Usuario</span>
+          </div>
+          <input readonly type="text" value="{{ usuario_detalle.usuario }}" name="usuario" class="form-control input_formulario">
+        </div> 
+      </div>
+      <div class="col-md-6">
+        <div class="input-group input-group-sm mb-2">
+          <div class="input-group-prepend">
+            <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">Nombre</span>
+          </div>
+          <input disabled type="text" value="{{ usuario_detalle.nombre }}" name="nombre" class="form-control input_formulario">
+        </div>
+      </div> 
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="input-group input-group-sm mb-2">
+          <div class="input-group-prepend">
+            <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">Contraseña</span>
+          </div>
+          <!-- Se habilita para que el usuario pueda escribir la nueva contraseña -->
+          <input type="password" value="" name="contrasena" class="form-control input_formulario">
+        </div>
+      </div>
+    </div>
+    <br>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <button type="submit" class="btn btn-outline-success btn-sm">
+            <i class="fas fa-save"></i> Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function(event) {
+  if (!confirm("¿Estás seguro de actualizar la contraseña?")) {
+    event.preventDefault();
+  }
+});
+</script>
+
+{% endblock %}

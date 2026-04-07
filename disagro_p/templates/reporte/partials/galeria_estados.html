@@ -1,0 +1,91 @@
+<div class="gallery-report">
+   <div class="gallery-report__header">
+      <h4 class="mb-3">Galería de estados del inventario</h4>
+      <p class="text-muted">Visualiza las captaciones que cuentan con evidencia fotográfica.</p>
+   </div>
+   <div class="gallery-report__actions">
+      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+         <i class="fas fa-print mr-1"></i> Imprimir
+      </button>
+   </div>
+
+   {% if resultados %}
+   <div class="row g-3 gallery-grid">
+      {% for item in resultados %}
+      <div class="col-12 col-sm-6 col-lg-4 d-flex">
+         <div class="card h-100">
+            <div class="gallery-image-wrapper">
+               <img src="{{ item.IMAGEN }}" class="card-img-top img-fluid img-thumbnail gallery-report__image" alt="{{ item.ARTICULO }}">
+               <div class="gallery-image-actions">
+                  <button type="button"
+                          class="btn btn-primary btn-sm"
+                          data-toggle="modal"
+                          data-target="#galleryZoomModal"
+                          data-image="{{ item.IMAGEN }}"
+                          data-articulo="{{ item.ARTICULO }}"
+                          data-descripcion="{{ item.DESCRIPCION }}">
+                     <i class="fas fa-search-plus"></i>
+                  </button>
+               </div>
+            </div>
+            <div class="card-body">
+               <h5 class="card-title mb-1">{{ item.ARTICULO }}</h5>
+               <p class="card-text mb-0">{{ item.DESCRIPCION }}</p>
+            </div>
+            <div class="card-footer">
+               <small class="text-muted">
+                  Ubicación / Almacén: {{ item.UBICACION }} - {{ item.ALMACEN }}<br>
+                  Cantidad: {{ item.CANTIDAD }}<br>
+                  Estado: {{ item.ESTADO }}
+               </small>
+            </div>
+         </div>
+      </div>
+      {% endfor %}
+   </div>
+   {% else %}
+   <div class="alert alert-info" role="alert">
+      No se encontraron captaciones con imágenes para esta planificación.
+   </div>
+   {% endif %}
+</div>
+
+<div class="modal fade" id="galleryZoomModal" tabindex="-1" role="dialog" aria-labelledby="galleryZoomModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="galleryZoomModalLabel">
+          <span data-gallery-zoom-articulo></span>
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body text-center">
+        <img src="" alt="Vista ampliada" class="img-fluid" data-gallery-zoom-image>
+        <p class="mt-3 text-muted" data-gallery-zoom-descripcion></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var zoomModal = $('#galleryZoomModal');
+  if (!zoomModal.length) {
+    return;
+  }
+
+  zoomModal.on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var imageSrc = button.data('image');
+    var articulo = button.data('articulo') || '';
+    var descripcion = button.data('descripcion') || '';
+
+    var modal = $(this);
+    modal.find('[data-gallery-zoom-image]').attr('src', imageSrc);
+    modal.find('[data-gallery-zoom-articulo]').text(articulo);
+    modal.find('[data-gallery-zoom-descripcion]').text(descripcion);
+  });
+});
+</script>

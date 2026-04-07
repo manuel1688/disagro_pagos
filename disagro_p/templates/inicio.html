@@ -1,0 +1,353 @@
+{% extends "index.html" %}
+
+{% block head %}
+    {{ super() }}
+    {% block title %}<title>Inicio </title>{% endblock %}
+{% endblock %}
+
+{% block content %}
+<br>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}.
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% if es_super_usuario and cantidad_articulos_incompletos > 0 %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert" id="alert-articulos-inicio">
+  <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Artículos Incompletos en el Sistema</h5>
+  <p>Hay <strong id="contador-incompletos-inicio">{{ cantidad_articulos_incompletos }}</strong> artículo(s) con información incompleta que requieren actualización.</p>
+  <button type="button" class="btn btn-warning btn-sm" data-toggle="collapse" data-target="#collapseArticulosInicio" aria-expanded="false">
+    <i class="fa fa-list"></i> Ver Detalle
+  </button>
+  <button type="button" class="btn btn-primary btn-sm ml-2" id="btn-editar-articulos-inicio" data-toggle="modal" data-target="#modalEditarArticulosInicio">
+    <i class="fa fa-edit"></i> Editar artículos
+  </button>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <div class="collapse mt-3" id="collapseArticulosInicio">
+    <div class="card card-body">
+      <h6>Artículos por completar:</h6>
+      <ul class="mb-0" id="lista-articulos-incompletos-inicio">
+        {% for articulo in lista_articulos_incompletos %}
+        <li><code>{{ articulo }}</code></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Modal para editar artículos incompletos (siempre presente si es super_usuario) -->
+{% if es_super_usuario %}
+<div class="modal fade" id="modalEditarArticulosInicio" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-edit"></i> Editar Artículos Incompletos del Sistema
+        </h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="spinner-articulos-inicio" class="text-center" style="display: none;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Cargando...</span>
+          </div>
+        </div>
+        <div id="contenedor-tabla-articulos-inicio" style="display: none;">
+          <p class="text-muted">
+            <small>Complete la información de los artículos. Los campos marcados con * son obligatorios.</small>
+          </p>
+          <table class="table table-striped table-bordered dt-responsive nowrap" id="grid_articulos_incompletos_inicio" style="width:100%">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descripción *</th>
+                <th>Categoría 1 *</th>
+                <th>Categoría 2 *</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          <i class="fas fa-times"></i> Cerrar
+        </button>
+        <button type="button" class="btn btn-success" id="btn-guardar-inicio">
+          <i class="fas fa-save"></i> Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(document).ready(function() {
+  // Variables globales para edición de artículos en inicio
+  let articulosIncompletosInicio = [];
+  let categorias1Inicio = [];
+  let categorias2Inicio = [];
+  let tablaArticulosInicio = null;
+
+  // Función para cargar artículos incompletos (SIN id_planificacion)
+  function cargarArticulosIncompletosInicio() {
+    $('#spinner-articulos-inicio').show();
+    $('#contenedor-tabla-articulos-inicio').hide();
+    
+    fetch('/planificacion/articulos/incompletos', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (!data.error) {
+        articulosIncompletosInicio = data.articulos;
+        categorias1Inicio = data.categorias_1;
+        categorias2Inicio = data.categorias_2;
+        actualizarResumenArticulosInicio();
+        
+        renderizarTablaArticulosInicio();
+        $('#spinner-articulos-inicio').hide();
+        $('#contenedor-tabla-articulos-inicio').show();
+      } else {
+        alert('Error al cargar artículos: ' + data.mensaje);
+        $('#modalEditarArticulosInicio').modal('hide');
+      }
+    })
+    .catch(error => {
+      alert('Error de conexión al cargar artículos');
+      $('#modalEditarArticulosInicio').modal('hide');
+    });
+  }
+
+  // Función para renderizar la tabla
+  function renderizarTablaArticulosInicio() {
+    if (tablaArticulosInicio) {
+      tablaArticulosInicio.destroy();
+    }
+
+    const tbody = $('#grid_articulos_incompletos_inicio tbody');
+    tbody.empty();
+
+    articulosIncompletosInicio.forEach(function(articulo, index) {
+      const opciones1 = categorias1Inicio.map(cat => 
+        `<option value="${cat.codigo}" ${cat.codigo === articulo.categoria_1 ? 'selected' : ''}>${cat.codigo} - ${cat.descripcion}</option>`
+      ).join('');
+      
+      const opciones2 = categorias2Inicio.map(cat => 
+        `<option value="${cat.codigo}" ${cat.codigo === articulo.categoria_2 ? 'selected' : ''}>${cat.codigo} - ${cat.descripcion}</option>`
+      ).join('');
+
+      const fila = `
+        <tr data-index="${index}">
+          <td>${articulo.articulo}</td>
+          <td>
+            <input type="text" class="form-control form-control-sm input-descripcion-inicio" 
+                   value="${articulo.descripcion}" 
+                   data-articulo="${articulo.articulo}"
+                   placeholder="Ingrese descripción">
+          </td>
+          <td>
+            <select class="form-control form-control-sm select-categoria-1-inicio" data-articulo="${articulo.articulo}">
+              ${opciones1}
+            </select>
+          </td>
+          <td>
+            <select class="form-control form-control-sm select-categoria-2-inicio" data-articulo="${articulo.articulo}">
+              ${opciones2}
+            </select>
+          </td>
+        </tr>
+      `;
+      tbody.append(fila);
+    });
+
+    // Inicializar DataTable
+    tablaArticulosInicio = $('#grid_articulos_incompletos_inicio').DataTable({
+      paging: true,
+      responsive: true,
+      searching: true,
+      ordering: true,
+      language: idioma,
+      order: [[0, 'asc']],
+      pageLength: 10
+    });
+  }
+
+  function actualizarResumenArticulosInicio() {
+    const contador = $('#contador-incompletos-inicio');
+    if (contador.length) {
+      contador.text(articulosIncompletosInicio.length);
+    }
+    const lista = $('#lista-articulos-incompletos-inicio');
+    if (lista.length) {
+      lista.empty();
+      articulosIncompletosInicio.forEach(function(articulo) {
+        lista.append(`<li><code>${articulo.articulo}</code></li>`);
+      });
+    }
+    const alerta = $('#alert-articulos-inicio');
+    if (alerta.length) {
+      if (articulosIncompletosInicio.length === 0) {
+        alerta.fadeOut();
+      } else {
+        alerta.show();
+      }
+    }
+  }
+
+  // Función para guardar artículos
+  $('#btn-guardar-inicio').on('click', function() {
+    if (articulosIncompletosInicio.length === 0) {
+      alert('ℹ No hay artículos pendientes por guardar');
+      return;
+    }
+
+    const articulosPendientes = [];
+    const articulosConErrores = [];
+
+    articulosIncompletosInicio.forEach(function(articulo) {
+      const fila = $(`#grid_articulos_incompletos_inicio tr:has([data-articulo="${articulo.articulo}"])`);
+      const descripcion = fila.find('.input-descripcion-inicio').val().trim();
+      const categoria1 = fila.find('.select-categoria-1-inicio').val();
+      const categoria2 = fila.find('.select-categoria-2-inicio').val();
+
+      const descripcionOriginal = (articulo.descripcion || '').trim();
+      const filaTieneCambios = descripcion !== descripcionOriginal ||
+                               categoria1 !== articulo.categoria_1 ||
+                               categoria2 !== articulo.categoria_2;
+
+      if (!filaTieneCambios) {
+        return;
+      }
+
+      const datosValidos = descripcion &&
+                           descripcion !== 'Sin descripción' &&
+                           categoria1 && categoria2 &&
+                           !categoria1.startsWith('ND') &&
+                           !categoria2.startsWith('ND');
+
+      if (!datosValidos) {
+        articulosConErrores.push(articulo.articulo);
+        return;
+      }
+
+      articulosPendientes.push({
+        articulo: articulo.articulo,
+        descripcion: descripcion,
+        categoria_1: categoria1,
+        categoria_2: categoria2
+      });
+    });
+
+    if (articulosConErrores.length > 0) {
+      alert(`✗ Hay ${articulosConErrores.length} artículo(s) con datos incompletos. Por favor complete todos los campos antes de guardar.`);
+      return;
+    }
+
+    if (articulosPendientes.length === 0) {
+      alert('ℹ No hay cambios listos para guardar');
+      return;
+    }
+
+    if (!confirm('¿Está seguro de guardar los cambios?')) {
+      return;
+    }
+
+    const promesas = articulosPendientes.map(function(item) {
+      return fetch('/planificacion/articulos/actualizar', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(item)
+      }).then(response => response.json());
+    });
+
+    $('#btn-guardar-inicio').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Guardando...');
+
+    Promise.all(promesas)
+      .then(function() {
+        alert('✓ Los artículos se actualizaron correctamente');
+        const articulosActualizados = new Set(articulosPendientes.map(item => item.articulo));
+        articulosIncompletosInicio = articulosIncompletosInicio.filter(function(articulo) {
+          return !articulosActualizados.has(articulo.articulo);
+        });
+        renderizarTablaArticulosInicio();
+        actualizarResumenArticulosInicio();
+
+        if (articulosIncompletosInicio.length === 0) {
+          $('#modalEditarArticulosInicio').modal('hide');
+        }
+      })
+      .catch(function() {
+        alert('✗ Algunos artículos no pudieron actualizarse');
+      })
+      .finally(function() {
+        $('#btn-guardar-inicio').prop('disabled', false).html('<i class="fas fa-save"></i> Guardar');
+      });
+  });
+
+  // Event handler cuando se abre el modal (Bootstrap lo abre con data-toggle)
+  $('#modalEditarArticulosInicio').on('show.bs.modal', function() {
+    cargarArticulosIncompletosInicio();
+  });
+});
+</script>
+{% endif %}
+
+<h3>Bienvenido {{ g.user.usuario }}.</h3>
+
+<br>
+<p>Para comenzar, seleccione una del menú de opciones.</p>
+
+<!-- Componente de fecha/hora en tiempo real -->
+<div id="datetime-display" style="position: fixed; bottom: 10px; right: 15px; background-color: rgba(52, 58, 64, 0.9); color: white; padding: 10px 15px; border-radius: 8px; font-family: 'Courier New', monospace; box-shadow: 0 2px 8px rgba(0,0,0,0.3); z-index: 1000; min-width: 280px;">
+  <div style="font-size: 11px; opacity: 0.8; margin-bottom: 3px;">FECHA Y HORA ACTUAL</div>
+  <div id="datetime-fecha" style="font-size: 14px; font-weight: bold;">--/--/----</div>
+  <div id="datetime-hora" style="font-size: 18px; font-weight: bold; margin: 3px 0;">--:--:--</div>
+  <div id="datetime-timezone" style="font-size: 11px; opacity: 0.7;">Cargando zona horaria...</div>
+</div>
+
+<script type="module">
+  import { getCurrentDate, getCurrentTime, getUserTimezone, getTimezoneAbbreviation } from "/static/js/timezone_utils.js";
+  
+  // Actualizar fecha, hora y timezone
+  function actualizarDateTime() {
+    document.getElementById('datetime-fecha').textContent = getCurrentDate();
+    document.getElementById('datetime-hora').textContent = getCurrentTime();
+  }
+  
+  // Configurar timezone una sola vez
+  const timezone = getUserTimezone();
+  const tzAbbr = getTimezoneAbbreviation();
+  document.getElementById('datetime-timezone').textContent = `Zona horaria: ${tzAbbr}`;
+  
+  // Actualizar inmediatamente
+  actualizarDateTime();
+  
+  // Actualizar cada segundo
+  setInterval(actualizarDateTime, 1000);
+</script>
+
+{% endblock %}
+
+{% block footer %}
+    {{ super() }}
+{% endblock %}

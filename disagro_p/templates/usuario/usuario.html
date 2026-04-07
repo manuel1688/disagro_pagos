@@ -1,0 +1,351 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <title>Configuración de Usuario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/usuario.css') }}">
+{% endblock %} 
+
+{% block content %}
+<div class="container-fluid mt-3">
+  <div class="row mb-3">
+    <div class="col">
+      <a class="btn btn-outline-dark btn-sm" href="/usuario/configuracion">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="mb-0"><i class="fas fa-user-circle text-muted mr-2"></i>Configuración de Usuario</h4>
+            </div>
+            <div>
+              <form action="/usuario/restablecer_contrasena/{{usuario_detalle.usuario}}" method="POST" style="display:inline;" class="mr-2">
+                <button id="boton_restablecer_contrasena" type="submit" class="btn btn-sm btn-outline-warning">
+                  <i class="fas fa-key"></i> Restablecer Contraseña
+                </button>
+              </form>
+              <form action="/usuario/eliminar/{{usuario_detalle.usuario}}" method="POST" style="display:inline;">
+                <button id="boton_eliminar" type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-trash-alt"></i> Eliminar Usuario
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <!-- Información del Usuario -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info font-weight-bold">
+                    <i class="fas fa-user mr-1"></i> Usuario
+                  </span>
+                </div>
+                <input disabled id="usuario" type="text" value="{{usuario_detalle.usuario}}" class="form-control" data-usuario="{{usuario_detalle.usuario}}">
+              </div> 
+            </div>
+            <div class="col-md-6">
+              <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                  <span class="input-group-text btn-info font-weight-bold">
+                    <i class="fas fa-id-card mr-1"></i> Nombre
+                  </span>
+                </div>
+                <input disabled id="nombre" type="text" value="{{usuario_detalle.nombre}}" class="form-control">
+              </div>
+            </div> 
+          </div>
+
+          <!-- Permisos del Usuario -->
+          <h5 class="mb-3"><i class="fas fa-shield-alt text-info mr-2"></i>Permisos y Roles</h5>
+          
+          <div class="row mb-3">
+            <!-- Super Usuario -->
+            <div class="col-md-6 mb-3">
+              <div class="card role-card h-100" data-role="super_usuario">
+                <div class="card-body">
+                  <div class="d-flex align-items-start mb-2">
+                    <div class="role-icon bg-danger">
+                      <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="flex-grow-1 ml-3">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="super_usuario" name="super_usuario" class="custom-control-input" {% if usuario_detalle.super_usuario == 'SI' %}checked{% endif %}>
+                        <label class="custom-control-label font-weight-bold" for="super_usuario">
+                          Super Usuario
+                          <span class="badge badge-danger ml-1">Admin</span>
+                        </label>
+                      </div>
+                      <small class="text-muted d-block mt-1">
+                        Acceso administrativo completo: gestión de usuarios, actualización de maestros, configuración del sistema.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nivel 1 -->
+            <div class="col-md-6 mb-3">
+              <div class="card role-card h-100" data-role="nivel_1">
+                <div class="card-body">
+                  <div class="d-flex align-items-start mb-2">
+                    <div class="role-icon bg-primary">
+                      <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="flex-grow-1 ml-3">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="nivel_1" name="nivel_1" class="custom-control-input" {% if usuario_detalle.nivel_1 == 'SI' %}checked{% endif %}>
+                        <label class="custom-control-label font-weight-bold" for="nivel_1">
+                          Nivel 1 - Administrador de Inventario
+                          <span class="badge badge-primary ml-1">19 rutas</span>
+                        </label>
+                      </div>
+                      <small class="text-muted d-block mt-1">
+                        Gestión end-to-end del inventario: carga de existencias, creación y edición de planificaciones, administración de maestros y acceso total a históricos y reportes operativos.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <!-- Nivel 2 -->
+            <div class="col-md-6 mb-3">
+              <div class="card role-card h-100" data-role="nivel_2">
+                <div class="card-body">
+                  <div class="d-flex align-items-start mb-2">
+                    <div class="role-icon bg-info">
+                      <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="flex-grow-1 ml-3">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="nivel_2" name="nivel_2" class="custom-control-input" {% if usuario_detalle.nivel_2 == 'SI' %}checked{% endif %}>
+                        <label class="custom-control-label font-weight-bold" for="nivel_2">
+                          Nivel 2 - Analista Financiero
+                          <span class="badge badge-info ml-1">11 rutas</span>
+                        </label>
+                      </div>
+                      <small class="text-muted d-block mt-1">
+                        Seguimiento y análisis: consulta planificaciones, históricos y reportes, con énfasis en reportes financieros y de valorización sin modificar datos operativos.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nivel 3 -->
+            <div class="col-md-6 mb-3">
+              <div class="card role-card h-100" data-role="nivel_3">
+                <div class="card-body">
+                  <div class="d-flex align-items-start mb-2">
+                    <div class="role-icon bg-success">
+                      <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="flex-grow-1 ml-3">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="nivel_3" name="nivel_3" class="custom-control-input" {% if usuario_detalle.nivel_3 == 'SI' %}checked{% endif %}>
+                        <label class="custom-control-label font-weight-bold" for="nivel_3">
+                          Nivel 3 - Supervisor de Inventario
+                          <span class="badge badge-success ml-1">12 rutas</span>
+                        </label>
+                      </div>
+                      <small class="text-muted d-block mt-1">
+                        Supervisión operativa: acceso a Planificar toma física, ajuste de filtros, consulta de históricos y reportes, y participación en el módulo Inventario &gt; Reconteo para validar capturas (sin carga de existencias).
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <!-- Nivel 4 -->
+            <div class="col-md-6 mb-3">
+              <div class="card role-card h-100" data-role="nivel_4">
+                <div class="card-body">
+                  <div class="d-flex align-items-start mb-2">
+                    <div class="role-icon bg-warning">
+                      <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="flex-grow-1 ml-3">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="nivel_4" name="nivel_4" class="custom-control-input" {% if usuario_detalle.nivel_4 == 'SI' %}checked{% endif %}>
+                        <label class="custom-control-label font-weight-bold" for="nivel_4">
+                          Nivel 4 - Supervisor de Captación
+                          <span class="badge badge-warning ml-1">9 rutas</span>
+                        </label>
+                      </div>
+                      <small class="text-muted d-block mt-1">
+                        Soporte a captación: monitoreo de capturas en campo, revisión de reportes operativos y seguimiento de observaciones del inventario, sin acceso directo a reconteo.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nivel 5 -->
+            <div class="col-md-6 mb-3">
+              <div class="card role-card h-100" data-role="nivel_5">
+                <div class="card-body">
+                  <div class="d-flex align-items-start mb-2">
+                    <div class="role-icon bg-secondary">
+                      <i class="fas fa-barcode"></i>
+                    </div>
+                    <div class="flex-grow-1 ml-3">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="nivel_5" name="nivel_5" class="custom-control-input" {% if usuario_detalle.nivel_5 == 'SI' %}checked{% endif %}>
+                        <label class="custom-control-label font-weight-bold" for="nivel_5">
+                          Nivel 5 - Captador
+                          <span class="badge badge-secondary ml-1">Captura</span>
+                        </label>
+                      </div>
+                      <small class="text-muted d-block mt-1">
+                        Captación de datos de inventario físico exclusivamente, sin acceso a reportes, históricos ni planificaciones.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón Guardar -->
+          <div class="row mt-4">
+            <div class="col">
+              <button id="boton_guardar" type="button" class="btn btn-info">
+                <i class="fas fa-save mr-1"></i> Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/common.js')}}"></script>
+
+<script type="module">
+import { envio_objeto_json } from "/static/js/operaciones_dom.js";
+
+// Efectos visuales para tarjetas de roles
+document.querySelectorAll('.role-card').forEach(card => {
+    const checkbox = card.querySelector('input[type="checkbox"]');
+    
+    if (checkbox && checkbox.checked) {
+        card.classList.add('active');
+    }
+    
+    card.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+            checkbox.checked = !checkbox.checked;
+            card.classList.toggle('active', checkbox.checked);
+        }
+    });
+    
+    if (checkbox) {
+        checkbox.addEventListener('change', function() {
+            card.classList.toggle('active', this.checked);
+        });
+    }
+});
+
+// Validación de permisos
+function validarPermisos() {
+    const permisos = ['super_usuario', 'nivel_1', 'nivel_2', 'nivel_3', 'nivel_4', 'nivel_5'];
+    const algunPermisoSeleccionado = permisos.some(permiso => {
+        const checkbox = document.querySelector(`#${permiso}`);
+        return checkbox && checkbox.checked;
+    });
+    
+    if (!algunPermisoSeleccionado) {
+        alert('⚠️ Debe seleccionar al menos un permiso para el usuario.');
+        return false;
+    }
+    return true;
+}
+
+// Guardar cambios
+const boton_guardar = document.querySelector("#boton_guardar");
+if (boton_guardar) {
+    boton_guardar.addEventListener("click", function() {
+        console.log("click boton guardar");
+        
+        if (!validarPermisos()) {
+            return;
+        }
+        
+        boton_guardar.disabled = true;
+        boton_guardar.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
+        
+        const data = {
+            "super_usuario": document.querySelector("#super_usuario")?.checked || false,
+            "nivel_1": document.querySelector("#nivel_1")?.checked || false,
+            "nivel_2": document.querySelector("#nivel_2")?.checked || false,
+            "nivel_3": document.querySelector("#nivel_3")?.checked || false,
+            "nivel_4": document.querySelector("#nivel_4")?.checked || false,
+            "nivel_5": document.querySelector("#nivel_5")?.checked || false
+        };
+        
+        const body = JSON.stringify(data);
+        const usuario = "{{usuario_detalle.usuario}}";
+        
+        envio_objeto_json(body, `/usuario/${usuario}`, "POST")
+            .then((data) => {
+                console.log(data);
+                if (!data.error) {
+                    boton_guardar.innerHTML = '<i class="fas fa-check mr-1"></i> Guardado exitosamente';
+                    boton_guardar.classList.remove('btn-info');
+                    boton_guardar.classList.add('btn-success');
+                    alert('✓ ' + data.mensaje);
+                    
+                    setTimeout(() => {
+                        boton_guardar.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Cambios';
+                        boton_guardar.classList.remove('btn-success');
+                        boton_guardar.classList.add('btn-info');
+                        boton_guardar.disabled = false;
+                    }, 2000);
+                } else {
+                    boton_guardar.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Cambios';
+                    boton_guardar.disabled = false;
+                    alert(`❌ ERROR: ${data.mensaje}`);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                boton_guardar.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Cambios';
+                boton_guardar.disabled = false;
+                alert('❌ ERROR: No se pudo guardar los cambios. Por favor, intenta de nuevo.');
+            });
+    });
+}
+</script>
+
+<script>
+  document.getElementById('boton_eliminar').addEventListener('click', function(event) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) {
+      event.preventDefault();
+    }
+  });
+
+  document.getElementById('boton_restablecer_contrasena').addEventListener('click', function(event) {
+    if (!confirm('¿Estás seguro de que deseas restablecer la contraseña? La nueva contraseña será igual al nombre de usuario.')) {
+      event.preventDefault();
+    }
+  });
+</script>
+
+{% endblock %}

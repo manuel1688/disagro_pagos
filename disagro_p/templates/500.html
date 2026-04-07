@@ -1,0 +1,24 @@
+{% extends "index.html" %}
+
+{% block head %}
+    {{ super() }}
+    {% block title %}<title>Inicio </title>{% endblock %}
+{% endblock %}
+
+{% block content %}
+<br>
+<div class="alert alert-danger" role="alert">
+    <h1 class="alert-heading">Error 500: Error Interno del Servidor</h1>
+    <p>Lo sentimos, se ha producido un error en el servidor. Por favor, inténtalo de nuevo más tarde.</p>
+    <hr>
+    <a href="/inicio" class="btn btn-primary">Volver al inicio</a>
+  </div>
+{% endblock %}
+
+{% block footer %}
+    {{ super() }}
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/inicio.js')}}"></script>
+{% endblock %}

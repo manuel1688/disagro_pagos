@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Registro{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <a href="{{ url_for('index')}}">Inicio</a>
+  <form method="post">
+    <label for="username">Username</label>
+    <input name="usuario" id="usuario" required autocomplete="false">
+    <br>
+    <label for="username">Nombre completo</label>
+    <input name="nombre" id="nombre" required autocomplete="false">
+    <br>
+    <label for="password">Password</label>
+    <input type="password" name="contrasena" id="contrasena" required autocomplete="false">
+    <br>
+    <label for="password">PIN Precio</label>
+    <input type="password" name="pin_precio" id="pin_precio">
+    <br>
+    <label for="password">PIN bajo costo</label>
+    <input type="password" name="pin_bajo_costo" id="pin_bajo_costo">
+    <br>
+    <label for="password">Correo</label>
+    <input type="email" name="correo" id="correo">
+    <br>
+    <input type="submit" value="Register">
+  </form>
+  <div id="contenedor_de_mensaje">
+    {% for message in get_flashed_messages() %}
+      <div class="flash"></div>
+      <div class="alert alert-danger alert-dismissible fade show">
+        <strong>Error: </strong>
+        <span>{{ message }}</span>
+        <button class="close" data-dismiss="alert" data-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
+

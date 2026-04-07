@@ -1,0 +1,8 @@
+textarea{
+    width: 100% !important;
+    border: 1px solid #ced4da !important;
+}
+
+#tabla_detalle_desglose{
+    font-size: 13px !important;
+}

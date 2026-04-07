@@ -1,0 +1,78 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pedido.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
+    {% block title %}
+    <title>Pedidos</title>
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+
+  <br>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2"></div>
+      <div class="col-md-8">
+        <div class="list-group">
+          <button {% if esta_aprobado %}disabled{% endif %} href="#" class="list-group-item list-group-item-action flex-column align-items-start list-group-item-info" data-target="#exampleModal1" data-toggle="modal">
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-1">Cierre de toma física</h5>
+              <small>1</small>
+            </div>
+            <p class="mb-1">
+              Consiste en la generación del reporte de estado de inventario, luego se efectua el cierre del proceso para que los datos sean archivados.
+            </p>
+            <small>Cierre de toma física</small>
+          </button>
+        </div>
+      </div>
+      <div class="col-md-2"></div>
+    </div>
+    <br>
+  </div>
+  <br>
+  <br>
+  <div class="modal fade" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Cierre de toma física</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-10">
+                Reporte de diferencias entre el inventario físico y el inventario en el sistema.
+              </div>
+              <div class="col-md-2">
+                <div class="form-check">
+                  <!-- <input class="form-check-input" type="checkbox" value="" id="defaultCheck1"> -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="boton_cerrar_aprobacion" type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          <a href="/cierre/reporte" id="boton_aprobar_inventario" type="button" class="btn btn-outline-dark btn-sm ">Generar reporte</a>
+          <button disabled id="boton_aprobar_inventario_loading" type="button" class="btn btn-outline-dark btn-sm active d-none">
+            Aprobando ... 
+            <div class="spinner-border text-light" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<div id="contenedor_de_mensaje"></div>
+<script src="{{ url_for('static', filename='js/common.js')}}"></script>
+<!-- <script type="module" src="{{ url_for('static', filename='js/inventario.js')}}"></script> -->
+{% endblock %}

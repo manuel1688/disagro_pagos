@@ -1,0 +1,135 @@
+<div class="report-states">
+   <div class="report-states__header">
+      <h4 class="mb-3">Reporte por estados del inventario físico</h4>
+      <p class="text-muted">Revisa las captaciones agrupadas por estado operativo. Puedes descargar o navegar hacia el detalle fotográfico desde aquí.</p>
+      <div class="report-states__actions no-print">
+         <a class="btn btn-outline-dark btn-sm" href="{{ url_for('reporte_bp.generar_reporte_estados_xls', id_planificacion=id_planificacion) }}">
+            Descargar XLS <i class="fa fa-download" aria-hidden="true"></i>
+         </a>
+         <a class="btn btn-outline-dark btn-sm ms-2" href="{{ url_for('reporte_bp.reporte_imagenes', id_planificacion=id_planificacion) }}">
+            Galería de estados <i class="fa fa-image" aria-hidden="true"></i>
+         </a>
+      </div>
+   </div>
+
+   <div class="ritz grid-container" dir="ltr" id="reporte_toma_fisica">
+      <table class="waffle" cellspacing="0" cellpadding="0">
+         <thead>
+            <tr>
+               <th class="row-header freezebar-origin-ltr"></th>
+               <th id="0C0" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C1" style="width:285px;" class="column-headers-background"></th>
+               <th id="0C2" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C3" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C4" style="width:104px;" class="column-headers-background"></th>
+               <th id="0C5" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C6" style="width:108px;" class="column-headers-background"></th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr style="height: 20px">
+               <th id="0R0" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">1</div>
+               </th>
+               <td class="s0" dir="ltr" colspan="7"><h4>REPORTE POR ESTADOS DEL INVENTARIO FÍSICO</h4></td>
+            </tr>
+            <tr style="height: 20px">
+               <th id="0R1" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">2</div>
+               </th>
+               <td class="s1" dir="ltr" colspan="7"></td>
+            </tr>
+            <tr style="height: 20px">
+               <th id="0R2" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">3</div>
+               </th>
+               <td class="s2" dir="ltr" colspan="3"></td>
+               <td class="s3" dir="ltr" colspan="4"><span style="font-weight:bold;">FECHA DE CREACIÓN</span>: <span id="fecha-creacion">{{ date.strftime("%d/%m/%Y %H:%M:%S") if date else 'N/A' }}</span></td>
+            </tr>
+
+            <tr style="height: 20px">
+               <th id="0R2b" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">3b</div>
+               </th>
+               <td class="s2" dir="ltr" colspan="3"></td>
+               <td class="s3" dir="ltr" colspan="4"><span style="font-weight:bold;">FECHA DEL REPORTE</span>: <span id="fecha-reporte-partial">--/--/---- --:--:--</span></td>
+            </tr>
+
+            {% for ubicacion in datos_estados.captaciones_por_ubicacion %}
+            <tr style="height: 20px">
+               <th id="0R3" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">4</div>
+               </th>
+               <td class="s1" dir="ltr" colspan="7"><span style="font-weight:bold;">UBICAICIÓN</span>: {{ ubicacion.UBICACION }}</td>
+            </tr>
+
+            {% for articulo in ubicacion.ARTICULOS %}
+            <tr style="height: 20px">
+               <th id="0R4" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">5</div>
+               </th>
+               <td class="s4" dir="ltr">ARTICULO</td>
+               <td class="s4" dir="ltr">DESCRIPCION</td>
+               <td class="s5" dir="ltr">ALMACEN</td>
+               <td class="s5" dir="ltr">LOTE</td>
+               <td class="s5" dir="ltr">F. EXPIRACION</td>
+               <td class="s5" dir="ltr">FISICO</td>
+               <td class="s5" dir="ltr">ESTADO</td>
+            </tr>
+
+            <tr style="height: 20px">
+               <th id="0R5" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">6</div>
+               </th>
+               <td class="s6" dir="ltr">{{ articulo.ARTICULO }}</td>
+               <td class="s7" dir="ltr">{{ articulo.DESCRIPCION }}</td>
+               <td class="s8" dir="ltr" colspan="5"></td>
+            </tr>
+            {% set captaciones_length = articulo.CAPTACIONES | length %}
+            {% for captacion in articulo.CAPTACIONES %}
+            <tr style="height: 20px">
+               <th id="0R8" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">9</div>
+               </th>
+               {% if loop.first %}
+               <td class="s9" colspan="2" rowspan="{{ captaciones_length }}"></td>
+               {% endif %}
+               <td class="s10" dir="ltr">{{ captacion.ALMACEN }}</td>
+               <td class="s10" dir="ltr">{{ captacion.LOTE }}</td>
+               <td class="s3">{{ captacion.FECHA_DE_EXPIRACION }}</td>
+               <td class="s10" dir="ltr">{{ captacion.FISICO }}</td>
+               <td class="s10 re-conteo" dir="ltr">{{ captacion.ESTADO }}</td>
+            </tr>
+            {% endfor %}
+            <tr style="height: 20px">
+               <th id="0R27" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">28</div>
+               </th>
+               <td class="s5" colspan="4"></td>
+               <td class="s5">TOTAL</td>
+               <td class="s5">{{ articulo.TOTAL_FISICO }}</td>
+               <td class="s5"></td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+
+            <tr style="height: 20px">
+               <th id="0R53" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">54</div>
+               </th>
+               <td class="s21" colspan="5">TOTAL</td>
+               <td class="s21">{{ datos_estados.TOTAL_GLOBAL }}</td>
+               <td class="s21"></td>
+            </tr>
+         </tbody>
+      </table>
+   </div>
+</div>
+
+<script type="module">
+  import { getCurrentDateTime } from "/static/js/timezone_utils.js";
+  const fechaReporteEl = document.getElementById('fecha-reporte-partial');
+  if (fechaReporteEl) {
+    fechaReporteEl.textContent = getCurrentDateTime();
+  }
+</script>

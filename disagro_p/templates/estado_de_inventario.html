@@ -1,0 +1,155 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pedido.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/despacho.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.dataTables.min.css')}}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dataTables.buttons.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/jszip.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/pdfmake.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/vfs_fonts.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/buttons.html5.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/html2pdf.bundle.min.js')}}"></script>
+    {% block title %}
+    <title></title>
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+
+<br>
+<div class="container-fluid" id="encabezado_busqueda">
+  <div class="row">
+    <div class="col-md-3">
+      <a id="" type="button" class="btn btn-outline-dark btn-sm" href="/inventario_ui/reportes">
+        <i class="fas fa-arrow-left"></i> 
+      </a>
+    </div>
+  </div>
+  <div class="row d-none" id="boton_buscar">
+    <div class="col-md-3">
+      <a id="" type="button" class="btn btn-outline-dark btn-sm" href="/inventario_ui/estado">
+        <i class="fas fa-search"></i> 
+      </a>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-6">
+      <div class="jumbotron">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="btn-group btn-block">
+              <button id="boton_select_bodega" type="button" class="btn btn-sm btn-danger">Bodega</button>
+              <button type="button" class="btn btn-sm btn-danger dropdown-toggle dropdown-toggle-split" 
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <div class="dropdown-menu">
+                  {% for bodega in bodegas %}
+                    <a data-codigo="{{bodega['U_BODEGA']}}" data-usuario="{{ usuario }}" class="dropdown-item opcion_bodega" href="#">{{bodega['U_BODEGA']}}</a>
+                  {% endfor %}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="btn-group btn-block">
+              <button id="boton_select_comcode" type="button" class="btn btn-sm btn-danger">Comcode</button>
+              <button type="button" class="btn btn-sm btn-danger dropdown-toggle dropdown-toggle-split" 
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <div class="dropdown-menu">
+                {% for comcode in comcodes %}
+                  <a data-codigo="{{comcode['U_COMCODE']}}" data-usuario="{{ usuario }}" class="dropdown-item opcion_comcode" href="#">{{comcode['U_COMCODE']}}</a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <br>
+        <div class="row">
+          <div class="col-md-12">
+            <button id="boton_enviar_filtro" type="button" class="btn btn-outline-dark btn-sm active">
+              Filtrar <i class="fa fa-filter" aria-hidden="true"></i>
+            </button>
+            <button disabled id="boton_enviar_filtro_loading" type="button" class="btn btn-outline-dark btn-sm active d-none">
+              Filtrando ... 
+              <div class="spinner-border text-light" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3"></div>
+  </div>
+</div>
+<br>
+<div class="container-fluid" id="mensaje_sin_resultados">
+  <div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-6">
+      <div class="alert alert-primary" role="alert">
+        No hay resultados filtrados.
+      </div>
+    </div>
+    <div class="col-md-3"></div>
+  </div>
+</div>
+
+
+<div id="contenedor_resultados" class="container-fluid d-none">
+  <div class="col-md-12 text-center">
+    La Cooperativa de S/M de Productores de Leche de Panamá, R.L
+  </div>
+  <div class="col-md-12 text-center">
+    Reporte de estado de inventario
+  </div>
+  <div class="col-md-12 text-center">
+    Bodega: <span id="bodega_de_reporte"></span>
+  </div>
+  <br>
+  <table id="estado_de_inventario">
+    <thead>
+      <tr>
+        <th>Artículo</th>
+        <th>Descripción</th>
+        <th>Comcode</th>
+        <th>Área</th>
+        <th>Sección</th>
+        <th>Costo</th>
+        <th>Sistema</th>
+        <th>Físico</th>
+        <th>Dif.</th>
+        <th>Variación</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+    </tfoot>
+  </table>
+</div>
+
+<script>
+
+function imprimir_reporte_estado_inventario(){
+    var divContents = document.getElementById("contenedor_resultados").innerHTML;
+    var a = window.open('', '', 'height=800, width=1000');
+    a.document.write('<html>');
+    a.document.write('<body style="font-family: monospace;">');
+    a.document.write(divContents);
+    a.document.write('</body></html>');
+    a.document.close();
+    a.print();
+  } 
+
+
+</script>
+
+<script src="{{ url_for('static', filename='js/common.js')}}"></script>
+<script type="module" src="{{ url_for('static', filename='js/estado_de_inventario.js')}}"></script>
+{% endblock %}

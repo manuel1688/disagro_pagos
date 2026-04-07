@@ -1,0 +1,161 @@
+.important{
+    color: #336699;
+  }
+
+  .input_abono{
+    width:70px !important;
+  }
+
+  .monto{
+    font-family: monospace !important;
+  }
+
+  .dataTables_wrapper {
+    font-size: 13px;
+  }
+
+  .table td, .table th {
+    padding: 0.35rem !important;
+  }
+
+  .lead {
+    font-size: 0.9rem;
+    font-weight: 100;
+  }
+
+  .badge {
+    font-size: 100% !important;
+  }
+
+  .campo_codigo{
+    width: 50% !important;
+    display: inline !important;
+  }
+
+  #articulo_input{
+    width: 500px !important;
+  }
+
+  #encabezado{
+    height: 210px !important;
+  }
+
+  .seccion_cliente{
+    height: 200px !important;
+  }
+
+  /* #ingreso_articulo{
+    height: 200px !important;
+  } */
+
+  .informacion_articulo{
+    height: 150px !important;
+  }
+
+  .mb-2{
+    margin: 4px !important;
+  }
+
+  .input-group{
+    margin-left: 3px !important;
+  }
+
+  .boton_pos{
+    background-color: #f8f9fa !important;
+  }
+
+  .boton_pos:hover{
+    background-color: #000307 !important;
+    color: #f8f9fa !important;
+  }
+
+  .seccion-cliente{
+    height: 100% !important;
+  }
+
+  .mensaje-centrado{
+    left: 35%;
+    position: relative;
+    top: 30px;
+  }
+
+  .agregar-a-grid{
+    height: 100%;
+    position: relative;
+  }
+
+  .planificacion-mode-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 1;
+  }
+
+  .badge-planificacion-info {
+    background-color: #0c5460;
+    color: #fff;
+    border: 1px solid rgba(12, 84, 96, 0.2);
+    box-shadow: 0 1px 4px rgba(12, 84, 96, 0.25);
+  }
+
+  .badge-planificacion-warning {
+    background-color: #721c24;
+    color: #fff;
+    border: 1px solid rgba(114, 28, 36, 0.2);
+    box-shadow: 0 1px 4px rgba(114, 28, 36, 0.25);
+  }
+
+  .badge-planificacion-danger {
+    background-color: #491217;
+    color: #fff;
+    border: 1px solid rgba(73, 18, 23, 0.2);
+    box-shadow: 0 1px 4px rgba(73, 18, 23, 0.25);
+  }
+
+  
+  #tabla_detalle_pedido{
+    font-size: 13px !important;
+  }
+
+  #existencias_bodega{
+    font-size: 13px !important;
+  }
+
+  .etiqueta_corta {
+    display: inline-block;
+    width: 25px;
+    white-space: nowrap;
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+}
+
+.condicion-item{
+  cursor: pointer;
+}
+
+#select_vendedor {
+  opacity: 1 !important;
+  background-color: #01437d !important;
+}
+
+@media (min-width: 768px) {
+  #boton_enter {
+    display: none;
+  }
+}
+
+
+
+@media (max-width: 768px) {
+  /* Aumentar el tamaño de la fuente del span */
+  .input-group-text {
+    font-size: 19px; /* Ajusta el tamaño según tus necesidades */
+  }
+
+  /* Aumentar el tamaño de la fuente del enlace */
+  .dropdown-item {
+    font-size: 19px; /* Ajusta el tamaño según tus necesidades */
+  }
+}

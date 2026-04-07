@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css')}}">
+  <style type="text/css">
+    
+  </style>
+   {% block title %}<title>Iniciar sesión- Flaskr </title>{% endblock %}
+{% endblock %}
+{% block content %}
+
+  <div class="wrapper fadeInDown">
+    <div id="formContent">
+      <div class="fadeIn first">
+        
+      </div>
+      <form method="post">
+        <br>
+        <br>
+        
+        <label for="username">USUARIO</label>
+        <input class="fadeIn second" type="text" name="usuario" id="usuario" required>
+        <br>
+        <label for="password">CLAVE</label>
+        <br>
+        <input class="fadeIn third" type="password" name="contrasena" id="contrasena" required>
+        <input class="fadeIn fourth" type="submit" value="Log In">
+      </form>
+    </div>
+  </div>
+
+  <div id="contenedor_de_mensaje">
+    {% for message in get_flashed_messages() %}
+      <div class="flash"></div>
+      <div class="alert alert-danger alert-dismissible fade show">
+        <strong>Error: </strong>
+        <span>{{ message }}</span>
+        <button class="close" data-dismiss="alert" data-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    $( document ).ready(function() {
+        $("#cargando").addClass('d-none');
+
+        $( "#consultar" ).click(function(){
+          $("#cargando").removeClass('d-none');
+          $("#contenedor_formulario").addClass('d-none');
+        });
+    });
+  </script>
+
+{% endblock %}

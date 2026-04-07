@@ -1,0 +1,77 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pedido.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Datepicker CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    {% block title %}
+    <title></title>
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+
+<br>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-6">
+      <a id="" type="button" class="btn btn-outline-dark btn-sm" href="/inventario/captura">
+        <i class="fas fa-arrow-left"></i> 
+      </a>
+    </div>
+  </div>
+</div>
+<br>
+
+
+{% set modo_etiqueta = modo.etiqueta if modo is defined else 'Toma física' %}
+{% set modo_descripcion = modo.descripcion if modo is defined else 'Selecciona la planificación para continuar.' %}
+{% set modo_badge = modo.badge_class if modo is defined else 'badge-planificacion-info' %}
+{% set modo_boton = modo.boton_texto if modo is defined else 'Abrir planificación' %}
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-sm mb-3">
+        <div class="card-body d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="mb-1">Seleccione la planificación</h5>
+            <p class="text-muted mb-0">{{ modo_descripcion }}</p>
+          </div>
+          <span class="badge planificacion-mode-badge {{ modo_badge }}">{{ modo_etiqueta }}</span>
+        </div>
+      </div>
+
+      <select id="select-planificacion" class="form-control">
+        <option value="">-- Seleccione --</option>
+        {% for p in planificaciones_activas %}
+          <option value="{{ p.ID }}">{{ p.DESCRIPCION or ('Id: ' ~ p.ID) }}</option>
+        {% endfor %}
+      </select>
+      <br>
+      <button id="btn-ir" class="btn btn-primary" data-url-template="{{ url_template | default('/inventario/captura/__PLAN_ID__') }}">{{ modo_boton }}</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const botonIr = document.getElementById('btn-ir');
+  botonIr.addEventListener('click', function(){
+    const sel = document.getElementById('select-planificacion');
+    const val = sel.value;
+    if(!val){
+      alert('Seleccione una planificación');
+      return;
+    }
+    // Redirigir a la ruta de captura con la planificación seleccionada
+    const plantillaUrl = botonIr.dataset.urlTemplate || '/inventario/captura/__PLAN_ID__';
+    window.location.href = plantillaUrl.replace('__PLAN_ID__', val);
+  });
+</script>
+
+
+{% endblock %}

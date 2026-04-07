@@ -1,0 +1,136 @@
+.conteo-filter-container {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.conteo-filter-container .filter-card {
+  position: sticky;
+  top: 90px;
+  padding: 1.75rem;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 20px 45px -25px rgba(18, 38, 63, 0.25);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.conteo-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  margin-top: 1.5rem;
+}
+
+.filter-section {
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.6);
+  padding-bottom: 1.5rem;
+}
+
+.filter-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.filter-section__header h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.filter-actions .btn {
+  padding: 0;
+  font-weight: 600;
+}
+
+.filter-checkbox-group {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.65rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.92rem;
+  color: #1f2937;
+}
+
+.filter-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #4556d6;
+}
+
+.filter-chip-collection {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 30px;
+  background: rgba(69, 86, 214, 0.12);
+  color: #1e3a8a;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.chip-remove {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.chip-muted {
+  background: rgba(148, 163, 184, 0.18);
+  color: #475569;
+  font-weight: 500;
+}
+
+.filter-footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.filter-footer .btn {
+  min-width: 150px;
+}
+
+.filter-grid {
+  margin-top: 0.5rem;
+}
+
+.filter-grid .filter-section {
+  border-bottom: none;
+  padding-bottom: 0;
+  height: 100%;
+}
+
+.filter-grid .filter-chip-collection {
+  margin-bottom: 0;
+}
+
+@media (max-width: 991px) {
+  .conteo-filter-container .filter-card {
+    position: static;
+  }
+}

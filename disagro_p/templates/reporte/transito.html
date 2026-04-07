@@ -1,0 +1,752 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/diferencias.css')}}">
+    {% block title %}
+    <title>Reporte de Artículos en Tránsito</title>
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+<br>
+<input type="hidden" id="id_planificacion" name="id_planificacion" value="{{ id_planificacion }}">
+{% set catalog = report_catalog | default([]) %}
+{% set active_candidates = catalog | selectattr('key', 'equalto', selected_report) | list %}
+{% if active_candidates %}
+   {% set active_option = active_candidates[0] %}
+{% else %}
+   {% set active_option = None %}
+{% endif %}
+{% set current_key = selected_report | default('') %}
+{% set observacion_cierre = observacion_cierre | default(None) %}
+{% set usuario_aprobacion = usuario_aprobacion | default(None) %}
+{% set fecha_aprobacion = fecha_aprobacion | default(None) %}
+{% set planificacion_nombre = planificacion_nombre | default('') %}
+{% set planificacion_estado = planificacion_estado | default('') %}
+{% set planificacion_aprobada = planificacion_aprobada | default(False) %}
+{% set has_observacion = observacion_cierre or usuario_aprobacion or fecha_aprobacion %}
+
+<div class="report-shell">
+   <div class="report-toolbar no-print">
+      <div class="report-toolbar__left">
+         <div class="report-toolbar__badge">
+            <span class="report-toolbar__eyebrow">Reporte activo</span>
+            <span class="report-toolbar__title">
+               {{ active_option.label if active_option else 'Selecciona un reporte' }}
+               {% if planificacion_nombre %}
+               <span class="report-toolbar__plan-name">· {{ planificacion_nombre }}</span>
+               {% endif %}
+            </span>
+            {% if planificacion_correlativo %}
+            <small class="report-toolbar__meta text-muted">Correlativo: {{ planificacion_correlativo }}</small>
+            {% endif %}
+         </div>
+      </div>
+      <div class="report-toolbar__right">
+         <a class="btn btn-outline-dark btn-sm" href="{{ url_for('reporte_bp.generar_reporte_transito_xls', id_planificacion=id_planificacion) }}">
+            <i class="fa fa-download" aria-hidden="true"></i> Descargar (XLS)
+         </a>
+         {% if datos_transito.tiene_estados or datos_transito.tiene_imagenes %}
+         <button id="btnToggleAnexos" class="btn btn-outline-secondary btn-sm" type="button">
+            <i class="fa fa-images" aria-hidden="true"></i> Ver anexos
+         </button>
+         {% endif %}
+         {% set btn_observacion_clases = 'btn btn-outline-info btn-sm' %}
+         <button id="btn-acta-aprobacion"
+                 class="{{ btn_observacion_clases }}{% if not usuario_aprobacion %} d-none{% endif %}"
+                 type="button"
+                 data-observation-open
+                 data-has-observation="{{ 1 if has_observacion else 0 }}"
+                 data-planificacion-nombre="{{ planificacion_nombre or '' }}"
+                 data-planificacion-estado="{{ planificacion_estado or '' }}"
+                 data-planificacion-correlativo="{{ planificacion_correlativo or '' }}">
+            <i class="fa fa-file-signature" aria-hidden="true"></i> Ver acta de aprobación
+         </button>
+         <button class="btn btn-primary btn-sm" type="button" data-report-selector="open">
+            <i class="fa fa-th-large" aria-hidden="true"></i> Cambiar reporte
+         </button>
+         <button id="boton_aprobar"
+                 class="btn btn-outline-success btn-sm{% if not (seccion_de_planificacion and not costo and validar_area('NIVEL_1', g.user.usuario) and not planificacion_aprobada) %} d-none{% endif %}"
+                 type="button"
+                 data-approval-open>
+            Aprobar <i class="fa fa-check" aria-hidden="true"></i>
+         </button>
+      </div>
+   </div>
+
+   <div id="reportSelector" class="report-selector no-print" data-state="closed" data-active-key="{{ current_key }}">
+      <div class="report-selector__backdrop" data-report-selector="close"></div>
+      <div class="report-selector__panel">
+         <div class="report-selector__header">
+            <h5 class="mb-0">Seleccionar reporte</h5>
+            <button type="button" class="btn btn-outline-secondary btn-sm" aria-label="Cerrar" data-report-selector="close">
+               <i class="fa fa-times" aria-hidden="true"></i>
+            </button>
+         </div>
+         <div class="report-selector__search">
+            <div class="input-group input-group-sm">
+               <span class="input-group-text"><i class="fa fa-search" aria-hidden="true"></i></span>
+               <input type="search" id="reportSearchInput" class="form-control" placeholder="Buscar reporte">
+            </div>
+         </div>
+         <ul class="report-selector__list" id="reportSelectorList">
+            {% for option in catalog %}
+               {% if not option.required_role or validar_area(option.required_role, g.user.usuario) %}
+               <li class="report-selector__item{% if option.key == current_key %} is-active{% endif %}" data-key="{{ option.key }}" data-type="{{ option.type }}" data-href="{{ option.url }}">
+                  <div class="report-selector__icon">
+                     <i class="fa {{ option.icon }}" aria-hidden="true"></i>
+                  </div>
+                  <div class="report-selector__content">
+                     <div class="report-selector__title">{{ option.label }}</div>
+                     <div class="report-selector__description">{{ option.description }}</div>
+                  </div>
+                  <div class="report-selector__cta">
+                     {% if option.key == current_key %}
+                     <span class="report-selector__badge-active">Actual</span>
+                     {% else %}
+                     <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                     {% endif %}
+                  </div>
+               </li>
+               {% endif %}
+            {% endfor %}
+         </ul>
+         {% if not catalog %}
+         <div class="alert alert-warning mt-2 mb-0" role="alert">
+            No se encontraron reportes configurados.
+         </div>
+         {% endif %}
+      </div>
+   </div>
+
+   <style>
+      .ritz .waffle a { color: inherit; }
+
+      .ritz .waffle .s1 {
+         background-color: #c9daf8;
+         text-align: center;
+         font-style: italic;
+         color: #000000;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s4 {
+         background-color: #c9daf8;
+         text-align: center;
+         font-weight: bold;
+         color: #000000;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s5 {
+         background-color: #c9daf8;
+         text-align: right;
+         font-weight: bold;
+         color: #000000;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s7 {
+         background-color: #f3f3f3;
+         text-align: center;
+         color: #000000;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s8 {
+         background-color: #f3f3f3;
+         text-align: left;
+         color: #000000;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s14 {
+         background-color: #f3f3f3;
+         text-align: right;
+         color: #000000;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s15 {
+         background-color: #ffffff;
+         text-align: right;
+         color: #000000;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s16 {
+         background-color: #ffffff;
+         text-align: left;
+         color: #000000;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s19 {
+         background-color: #ffffff;
+         text-align: center;
+         color: #000000;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s21 {
+         background-color: #1c4587;
+         text-align: right;
+         font-weight: bold;
+         color: #ffffff;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s0 {
+         background-color: #c9daf8;
+         text-align: center;
+         font-weight: bold;
+         font-style: italic;
+         color: #000000;
+         font-family: Arial;
+         font-size: 11pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .ritz .waffle .s20 {
+         background-color: #1c4587;
+         text-align: left;
+         font-weight: bold;
+         color: #ffffff;
+         font-family: Arial;
+         font-size: 10pt;
+         vertical-align: bottom;
+         white-space: nowrap;
+         direction: ltr;
+         padding: 2px 3px 2px 3px;
+      }
+
+      .observacion-highlight {
+         background-color: #fff3cd !important;
+      }
+
+      .observacion-cell {
+         white-space: normal !important;
+         word-wrap: break-word !important;
+         word-break: break-word !important;
+         max-width: 250px;
+         overflow-wrap: break-word !important;
+         vertical-align: top !important;
+      }
+
+      .thumbnail-img {
+         max-height: 30px;
+         width: auto;
+         cursor: pointer;
+      }
+
+      @media print {
+         .no-print { display: none !important; }
+         .print-break { page-break-after: always; }
+      }
+
+      .gallery-card {
+         margin-bottom: 20px;
+      }
+
+      .gallery-card img {
+         max-height: 400px;
+         object-fit: contain;
+      }
+
+      .ritz.grid-container {
+         margin: 0 auto;
+         overflow-x: visible;
+         max-width: 100%;
+      }
+
+      #reporte_transito .waffle {
+         width: 100%;
+         table-layout: fixed;
+      }
+
+      .report-shell__content {
+         overflow-x: visible;
+      }
+
+      .report-states {
+         overflow-x: visible;
+      }
+   </style>
+
+   <div class="report-shell__content">
+      <div class="report-states">
+         <div class="report-states__header">
+            <h4 class="mb-3">Reporte de artículos en tránsito</h4>
+            <p class="text-muted">Inventario de artículos marcados como en movimiento entre ubicaciones.</p>
+         </div>
+
+         <div class="ritz grid-container" dir="ltr" id="reporte_transito">
+      <table class="waffle" cellspacing="0" cellpadding="0">
+         <thead>
+            <tr>
+               <th id="0C0" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C1" style="width:285px;" class="column-headers-background"></th>
+               <th id="0C2" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C3" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C4" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C5" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C6" style="width:80px;" class="column-headers-background"></th>
+               <th id="0C7" style="width:80px;" class="column-headers-background"></th>
+               <th id="0C8" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C9" style="width:150px;" class="column-headers-background"></th>
+               <th id="0C10" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C11" style="width:120px;" class="column-headers-background"></th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr style="height: 20px">
+               <td class="s0" dir="ltr" colspan="12"><h4>REPORTE DE ARTÍCULOS EN TRÁNSITO</h4></td>
+            </tr>
+            <tr style="height: 20px">
+               <td class="s1" dir="ltr" colspan="12"></td>
+            </tr>
+            <tr style="height: 20px">
+               <td class="s1" dir="ltr" colspan="12">
+                  <b>Planificación:</b> {{ planificacion_nombre }} | 
+                  <b>Correlativo:</b> {{ planificacion_correlativo }}
+               </td>
+            </tr>
+
+            {% for ubicacion in datos_transito.captaciones_por_ubicacion %}
+            <tr style="height: 20px">
+               <td class="s1" dir="ltr" colspan="12"><span style="font-weight:bold;">UBICACIÓN</span>: {{ ubicacion.UBICACION }}</td>
+            </tr>
+            <tr style="height: 20px">
+               <td class="s4" dir="ltr">ARTÍCULO</td>
+               <td class="s4" dir="ltr">DESCRIPCIÓN</td>
+               <td class="s5" dir="ltr">UBICACIÓN</td>
+               <td class="s5" dir="ltr">ALMACÉN</td>
+               <td class="s5" dir="ltr">LOTE</td>
+               <td class="s5" dir="ltr">F. EXP</td>
+               <td class="s5" dir="ltr">CANTIDAD</td>
+               <td class="s5" dir="ltr">COSTO UNIT.</td>
+               <td class="s5" dir="ltr">COSTO TOTAL</td>
+               <td class="s5" dir="ltr">OBSERVACIÓN</td>
+               <td class="s5" dir="ltr">CAPTADOR</td>
+               <td class="s5" dir="ltr">FECHA</td>
+            </tr>
+
+            {% for captacion in ubicacion.CAPTACIONES %}
+            <tr style="height: 20px" class="{% if captacion.OBSERVACION %}observacion-highlight{% endif %}">
+               <td class="s7" dir="ltr">{{ captacion.ARTICULO }}</td>
+               <td class="s8" dir="ltr">{{ captacion.DESCRIPCION }}</td>
+               <td class="s7" dir="ltr">{{ captacion.UBICACION }}</td>
+               <td class="s7" dir="ltr">{{ captacion.ALMACEN }}</td>
+               <td class="s7" dir="ltr">{{ captacion.LOTE }}</td>
+               <td class="s7" dir="ltr">{{ captacion.FECHA_EXPIRACION }}</td>
+               <td class="s14" dir="ltr">{{ captacion.CANTIDAD }}</td>
+               <td class="s14" dir="ltr">{{ "%.2f"|format(captacion.COSTO_UNITARIO) }}</td>
+               <td class="s14" dir="ltr">{{ "%.2f"|format(captacion.COSTO_TOTAL) }}</td>
+               <td class="s8 observacion-cell" dir="ltr">{{ captacion.OBSERVACION or '' }}</td>
+               <td class="s7" dir="ltr">{{ captacion.USUARIO }}</td>
+               <td class="s7" dir="ltr">{{ captacion.FECHA }}</td>
+            </tr>
+            {% endfor %}
+
+            <tr style="height: 20px">
+               <td class="s5" colspan="6"></td>
+               <td class="s5">TOTAL UBICACIÓN</td>
+               <td class="s5">{{ ubicacion.TOTAL_CANTIDAD }}</td>
+               <td class="s5"></td>
+               <td class="s5">{{ "%.2f"|format(ubicacion.TOTAL_COSTO) }}</td>
+               <td class="s5" colspan="2"></td>
+            </tr>
+            {% endfor %}
+
+            <tr style="height: 20px">
+               <td class="s21" colspan="6">TOTAL GLOBAL</td>
+               <td class="s21">{{ datos_transito.TOTAL_GLOBAL_CANTIDAD }}</td>
+               <td class="s21"></td>
+               <td class="s21"></td>
+               <td class="s21">{{ "%.2f"|format(datos_transito.TOTAL_GLOBAL_COSTO) }}</td>
+               <td class="s21" colspan="2"></td>
+            </tr>
+         </tbody>
+      </table>
+         </div>
+      </div>
+   </div>
+   <!-- FIN DE TABLA PRINCIPAL -->
+
+   <!-- SECCIÓN DE ANEXOS -->
+   <div id="seccionAnexos" class="report-shell__content mt-5" style="display: none;">
+   
+   <!-- ANEXO: IMÁGENES DE ARTÍCULOS EN TRÁNSITO -->
+   {% if datos_transito.tiene_imagenes %}
+   <div class="report-states pt-4">
+      <div class="report-states__header">
+         <h5 class="mb-3">Anexo: Evidencia fotográfica</h5>
+         <p class="text-muted">Imágenes de artículos en tránsito capturadas durante el inventario.</p>
+      </div>
+      <div class="row">
+         {% for ubicacion in datos_transito.captaciones_por_ubicacion %}
+            {% for captacion in ubicacion.CAPTACIONES %}
+               {% if captacion.IMAGEN %}
+         <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+               <img src="{{ captacion.IMAGEN }}" class="card-img-top" alt="{{ captacion.ARTICULO }}" style="max-height: 300px; object-fit: cover; cursor: pointer;" onclick="window.open(this.src)">
+               <div class="card-body">
+                  <h6 class="card-title">{{ captacion.ARTICULO }}</h6>
+                  <p class="card-text small mb-1"><strong>Descripción:</strong> {{ captacion.DESCRIPCION }}</p>
+                  <p class="card-text small mb-1"><strong>Ubicación:</strong> {{ captacion.UBICACION }} - {{ captacion.ALMACEN }}</p>
+                  <p class="card-text small mb-1"><strong>Cantidad:</strong> {{ captacion.CANTIDAD }}</p>
+                  {% if captacion.LOTE %}
+                  <p class="card-text small mb-1"><strong>Lote:</strong> {{ captacion.LOTE }}</p>
+                  {% endif %}
+                  {% if captacion.ESTADO %}
+                  <p class="card-text small mb-1"><strong>Estado:</strong> <span class="badge bg-info">{{ captacion.ESTADO }}</span></p>
+                  {% endif %}
+                  {% if captacion.OBSERVACION %}
+                  <p class="card-text small mb-1"><strong>Observación:</strong> {{ captacion.OBSERVACION }}</p>
+                  {% endif %}
+               </div>
+               <div class="card-footer bg-light">
+                  <small class="text-muted">{{ captacion.USUARIO }} · {{ captacion.FECHA }}</small>
+               </div>
+            </div>
+         </div>
+               {% endif %}
+            {% endfor %}
+         {% endfor %}
+      </div>
+   </div>
+   {% endif %}
+
+   <!-- ANEXO: TABLA DE ESTADOS -->
+   {% if datos_transito.tiene_estados %}
+   <div class="report-states pt-5">
+      <div class="report-states__header">
+         <h5 class="mb-3">Anexo: Artículos con estado operativo</h5>
+         <p class="text-muted">Detalle de artículos en tránsito que tienen estado registrado.</p>
+      </div>
+      <div class="ritz grid-container" dir="ltr">
+      <table class="waffle" cellspacing="0" cellpadding="0">
+         <thead>
+            <tr>
+               <th class="row-header freezebar-origin-ltr"></th>
+               <th style="width:100px;" class="column-headers-background"></th>
+               <th style="width:285px;" class="column-headers-background"></th>
+               <th style="width:100px;" class="column-headers-background"></th>
+               <th style="width:100px;" class="column-headers-background"></th>
+               <th style="width:80px;" class="column-headers-background"></th>
+               <th style="width:100px;" class="column-headers-background"></th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr style="height: 20px">
+               <th style="height: 20px;" class="row-headers-background"></th>
+               <td class="s0" dir="ltr" colspan="6"><h5>ARTÍCULOS EN TRÁNSITO CON ESTADO</h5></td>
+            </tr>
+            <tr style="height: 20px">
+               <th style="height: 20px;" class="row-headers-background"></th>
+               <td class="s4" dir="ltr">ARTÍCULO</td>
+               <td class="s4" dir="ltr">DESCRIPCIÓN</td>
+               <td class="s5" dir="ltr">UBICACIÓN</td>
+               <td class="s5" dir="ltr">ALMACÉN</td>
+               <td class="s5" dir="ltr">CANTIDAD</td>
+               <td class="s5" dir="ltr">ESTADO</td>
+            </tr>
+
+            {% for ubicacion in datos_transito.captaciones_por_ubicacion %}
+               {% for captacion in ubicacion.CAPTACIONES %}
+                  {% if captacion.ESTADO %}
+            <tr style="height: 20px">
+               <th style="height: 20px;" class="row-headers-background"></th>
+               <td class="s7" dir="ltr">{{ captacion.ARTICULO }}</td>
+               <td class="s8" dir="ltr">{{ captacion.DESCRIPCION }}</td>
+               <td class="s7" dir="ltr">{{ captacion.UBICACION }}</td>
+               <td class="s7" dir="ltr">{{ captacion.ALMACEN }}</td>
+               <td class="s14" dir="ltr">{{ captacion.CANTIDAD }}</td>
+               <td class="s7" dir="ltr">{{ captacion.ESTADO }}</td>
+            </tr>
+                  {% endif %}
+               {% endfor %}
+            {% endfor %}
+         </tbody>
+      </table>
+      </div>
+   </div>
+   {% endif %}
+
+   </div>
+   <!-- FIN ANEXOS -->
+
+</div>
+
+<div id="approvalModal" class="approval-modal" data-state="closed">
+   <div class="approval-modal__backdrop" data-approval-action="close"></div>
+   <div class="approval-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="approvalModalTitle">
+      <div class="approval-modal__header">
+         <div class="approval-modal__icon">
+            <i class="fa fa-shield-alt" aria-hidden="true"></i>
+         </div>
+         <div>
+            <h5 id="approvalModalTitle" class="mb-1">Confirmar cierre del reporte</h5>
+            <p class="mb-0 text-muted">Esta acción moverá la planificación al histórico y bloqueará nuevas captaciones.</p>
+         </div>
+         <button type="button" class="btn btn-outline-secondary btn-sm" data-approval-action="close" aria-label="Cerrar">
+            <i class="fa fa-times" aria-hidden="true"></i>
+         </button>
+      </div>
+      <div class="approval-modal__body">
+         <div class="approval-modal__summary">
+            <p class="fw-semibold mb-1">Resumen de aprobación</p>
+            <ul class="approval-modal__summary-list">
+               <li>Se generará el acta de cierre para la planificación <strong>#{{ id_planificacion }}</strong>.</li>
+               <li>Los reportes dejarán de aceptar modificaciones y quedarán disponibles solo en histórico.</li>
+               <li>El responsable quedará registrado con su firma digital y sello de tiempo.</li>
+            </ul>
+         </div>
+         <form id="approvalForm" class="approval-modal__form">
+            <div class="mb-3">
+               <label for="approvalObservaciones" class="form-label">Comentarios finales (opcional)</label>
+               <textarea id="approvalObservaciones" class="form-control" rows="2" placeholder="Notas relevantes del cierre"></textarea>
+            </div>
+            <div class="mb-3">
+               <label for="approvalPassword" class="form-label">Firma digital</label>
+               <input id="approvalPassword" type="password" class="form-control" placeholder="Ingresa tu contraseña de acceso" autocomplete="current-password" required>
+               <div class="form-text">Tu firma digital valida que eres el responsable de aprobar este cierre.</div>
+            </div>
+            <div class="approval-modal__feedback text-danger" data-approval-feedback hidden></div>
+            <div class="approval-modal__actions">
+               <button type="button" class="btn btn-outline-secondary" data-approval-action="close">Cancelar</button>
+               <button type="submit" class="btn btn-success"><span>Firmar y aprobar</span></button>
+            </div>
+         </form>
+      </div>
+   </div>
+</div>
+
+<div id="observationModal" class="approval-modal preview-shell" data-state="closed">
+    <div class="approval-modal__backdrop" data-observation-action="close"></div>
+    <div class="approval-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="observationModalTitle">
+       <div class="approval-modal__header">
+          <div class="approval-modal__icon">
+            <i class="fa fa-file-signature" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h5 id="observationModalTitle" class="mb-1">Acta de aprobación</h5>
+            <p class="mb-0 text-muted" data-observation-plan>Planificación: {{ planificacion_nombre or '-' }}</p>
+            <p class="mb-0 text-muted" data-observation-status>Estado del reporte: {{ planificacion_estado or '-' }}</p>
+          </div>
+         <button type="button" class="btn btn-outline-secondary btn-sm" data-observation-action="close" aria-label="Cerrar">
+            <i class="fa fa-times" aria-hidden="true"></i>
+         </button>
+      </div>
+      <div class="approval-modal__body">
+         <div class="observation-empty alert alert-secondary" role="alert" data-observation-empty>
+            No se registró acta de aprobación para este cierre.
+         </div>
+         <div class="observation-details" data-observation-details hidden>
+            <p class="observation-meta"><strong>Nombre de la planificación:</strong> <span data-observation-plan-name>{{ planificacion_nombre or '-' }}</span></p>
+            <p class="observation-meta"><strong>Estado del reporte:</strong> <span data-observation-status-value>{{ planificacion_estado or '-' }}</span></p>
+            <p class="observation-meta"><strong>Responsable:</strong> <span data-observation-user>{{ usuario_aprobacion or '-' }}</span></p>
+            <p class="observation-meta"><strong>Fecha de aprobación:</strong> <span data-observation-date>{% if fecha_aprobacion %}{{ fecha_aprobacion.strftime("%d/%m/%Y %H:%M") }}{% else %}-{% endif %}</span></p>
+            <p class="observation-meta"><strong>Aprobado digitalmente por:</strong> <span data-observation-digital>{{ usuario_aprobacion or '-' }}</span></p>
+            <p class="observation-meta"><strong>Correlativo:</strong> <span data-observation-correlativo>{{ planificacion_correlativo or '-' }}</span></p>
+            <div class="observation-text-wrapper">
+               <p class="fw-semibold mb-1">Detalle del acta</p>
+               <p class="observation-text" data-observation-text>{{ observacion_cierre or 'Sin detalle registrado en el acta.' }}</p>
+            </div>
+            <div class="signature-section signature-section--modal">
+               <h6 class="signature-section__title">Firmas registradas</h6>
+               <p class="signature-section__note">Confirma la cadena de custodia asociada a esta acta.</p>
+               <div class="signature-section__grid">
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Jefe de Inventario</span>
+                  </div>
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Supervisor de Almacén</span>
+                  </div>
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Gerente Financiero</span>
+                  </div>
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Auditor Interno</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="approval-modal__actions">
+            <button type="button" class="btn btn-outline-secondary" data-observation-action="close">Cerrar</button>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-observation-action="print" data-observation-print disabled>
+               <i class="fa fa-print"></i> Imprimir acta
+            </button>
+            <button type="button" class="btn btn-primary" data-observation-action="print-full" data-observation-print-full disabled>
+               <i class="fa fa-file-pdf"></i> Imprimir acta completa
+            </button>
+         </div>
+      </div>
+   </div>
+</div>
+
+<script type="module" src="{{ url_for('static', filename='js/diferencias.js')}}"></script>
+<script>
+(function() {
+   const selector = document.getElementById('reportSelector');
+   if (!selector) {
+      return;
+   }
+
+   const openButtons = document.querySelectorAll('[data-report-selector="open"]');
+   const closeButtons = document.querySelectorAll('[data-report-selector="close"]');
+   const searchInput = document.getElementById('reportSearchInput');
+   const items = Array.from(selector.querySelectorAll('.report-selector__item'));
+   const activeKey = selector.getAttribute('data-active-key') || '';
+
+   const setState = (state) => {
+      selector.setAttribute('data-state', state);
+      document.body.classList.toggle('report-selector-open', state === 'open');
+      
+      // Si se está abriendo el selector, enfocar el campo de búsqueda
+      if (state === 'open' && searchInput) {
+         setTimeout(() => {
+            searchInput.focus();
+            searchInput.select();
+         }, 100);
+      }
+   };
+
+   openButtons.forEach(btn => {
+      btn.addEventListener('click', () => setState('open'));
+   });
+
+   closeButtons.forEach(btn => {
+      btn.addEventListener('click', () => setState('closed'));
+   });
+
+   if (searchInput) {
+      searchInput.addEventListener('input', (event) => {
+         const term = event.target.value.trim().toLowerCase();
+         items.forEach(item => {
+            const text = item.innerText.toLowerCase();
+            const matches = !term || text.includes(term);
+            item.style.display = matches ? '' : 'none';
+         });
+      });
+   }
+
+   items.forEach(item => {
+      item.addEventListener('click', () => {
+         const type = item.getAttribute('data-type');
+         const url = item.getAttribute('data-href');
+         const key = item.getAttribute('data-key');
+
+         if (!url) {
+            return;
+         }
+
+         if (key === activeKey && type !== 'download') {
+            setState('closed');
+            return;
+         }
+
+         if (type === 'download') {
+            window.open(url, '_blank');
+            setState('closed');
+            return;
+         }
+
+         window.location.href = url;
+      });
+   });
+})();
+</script>
+<script>
+// Control de visualización de anexos
+(function() {
+   const btnToggle = document.getElementById('btnToggleAnexos');
+   const seccionAnexos = document.getElementById('seccionAnexos');
+   
+   if (!btnToggle || !seccionAnexos) {
+      return;
+   }
+   
+   let anexosVisible = false;
+   
+   btnToggle.addEventListener('click', function() {
+      anexosVisible = !anexosVisible;
+      
+      if (anexosVisible) {
+         seccionAnexos.style.display = 'block';
+         btnToggle.innerHTML = '<i class="fa fa-eye-slash" aria-hidden="true"></i> Ocultar anexos';
+         btnToggle.classList.remove('btn-outline-secondary');
+         btnToggle.classList.add('btn-secondary');
+         
+         // Scroll suave hacia los anexos
+         setTimeout(() => {
+            seccionAnexos.scrollIntoView({ behavior: 'smooth', block: 'start' });
+         }, 100);
+      } else {
+         seccionAnexos.style.display = 'none';
+         btnToggle.innerHTML = '<i class="fa fa-images" aria-hidden="true"></i> Ver anexos';
+         btnToggle.classList.remove('btn-secondary');
+         btnToggle.classList.add('btn-outline-secondary');
+      }
+   });
+})();
+</script>
+{% endblock %}

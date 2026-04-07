@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    {% block title %}<title>DISAGRO  </title>{% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+{% endblock %}
+
+{% block header %}
+
+<nav class="navbar navbar-expand-sm navbar-professional">
+    <a class="navbar-brand" href="#"><i class="fas fa-warehouse"></i> DISAGRO</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+  
+        <li class="nav-item {% if pantalla_inicio == True %}active{% endif %}">
+          <a id="link_inicio" class="nav-link" href="{{ url_for('inicio')}}"><i class="fas fa-home"></i> Inicio</a>
+        </li>
+
+      {% if g.user %}
+        {% if validar_area('NIVEL_5',g.user.usuario) or validar_area('NIVEL_4',g.user.usuario) or validar_area('NIVEL_3',g.user.usuario)%}
+          <li class="nav-item dropdown">
+            <a id="link_inicio" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="">
+            <i class="fas fa-boxes"></i> Inventario
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              {% if validar_area('NIVEL_5',g.user.usuario) %}
+                <a id="" class="dropdown-item" href="/inventario/captura"><i class="fas fa-clipboard-list"></i> Toma física</a>
+              {% endif %}
+              {% if validar_area('NIVEL_3',g.user.usuario) %}
+                <a id="" class="dropdown-item" href="/inventario/reconteo"><i class="fas fa-redo"></i> Reconteo</a>
+              {% endif %}
+            </div>
+          </li>
+        {% endif %}
+      {% endif %}
+
+      {% if g.user %}
+        {% if validar_area('NIVEL_1',g.user.usuario) or validar_area('NIVEL_2',g.user.usuario) or validar_area('NIVEL_3',g.user.usuario) %}
+          <li class="nav-item dropdown">
+            <a id="link_inicio" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="">
+            <i class="fas fa-history"></i> Historial
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              {% if validar_area('NIVEL_1',g.user.usuario) or validar_area('NIVEL_2',g.user.usuario) or validar_area('NIVEL_3',g.user.usuario) %}
+                <a id="" class="dropdown-item" href="/historial/historiales/filtro"><i class="fas fa-file-alt"></i> Historial de Tomas físicas</a>
+              {% endif %}
+            </div>
+          </li>
+        {% endif %}
+      {% endif %}
+        
+        {% if g.user %}
+          {% if validar_area('NIVEL_1',g.user.usuario) or validar_area('SUPER_USUARIO',g.user.usuario) or validar_area('NIVEL_2',g.user.usuario) or validar_area('NIVEL_3',g.user.usuario) %}
+            <li class="nav-item dropdown">
+              <a id="link_inicio" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="">
+                <i class="fas fa-cogs"></i> Administración
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  {% if validar_area('NIVEL_1',g.user.usuario) %}
+                  <a class="dropdown-item" href="/admin/maestros"><i class="fas fa-database"></i> Configurar maestros</a>
+                  {% endif %}
+                  {% if validar_area('NIVEL_1',g.user.usuario) or validar_area('NIVEL_2',g.user.usuario) or validar_area('NIVEL_3',g.user.usuario) %}
+                  <a class="dropdown-item" href="/planificacion/planificaciones"><i class="fas fa-calendar-check"></i> Planificar toma física</a>
+                  {% endif %}
+                  {% if validar_area('SUPER_USUARIO',g.user.usuario) %}
+                  <a class="dropdown-item" href="/usuario/configuracion"><i class="fas fa-users-cog"></i> Configurar usuarios</a>
+                  {% endif %}
+              </div>
+            </li>
+          {% endif %}
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav user-menu">
+        <li class="nav-item dropdown">
+          <a id="link_inicio" class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="">
+            {% if g.user %}
+              <span class="user-badge">
+                <i class="fas fa-user-circle"></i>
+                <span class="font-weight-bold">{{ g.user.usuario }}</span>
+              </span>
+            {% else %}
+              <i class="fas fa-sign-in-alt"></i> Usuario
+            {% endif %}
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            {% if g.user %}
+              <a class="dropdown-item" href="/usuario/detalle/{{g.user.usuario}}"><i class="fas fa-user"></i> Mis datos</a>
+              <div class="dropdown-divider"></div>
+              <a id="cerrar_sesion" class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+            {% else %}
+              <a class="dropdown-item" href="{{ url_for('auth.iniciar_sesion')}}"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a>
+            {% endif %}
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <script type="module" src="{{ url_for('static', filename='js/index.js')}}"></script>
+{% endblock %}
+ 

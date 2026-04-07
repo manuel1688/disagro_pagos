@@ -1,0 +1,205 @@
+<div class="row">
+   <div class="col-12 ritz">
+      <table class="waffle" cellspacing="0" cellpadding="0">
+         <thead>
+            <tr>
+               <th class="row-header freezebar-origin-ltr"></th>
+               <th id="0C0" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C1" style="width:250px;" class="column-headers-background"></th>
+               <th id="0C2" style="width:140px;" class="column-headers-background"></th>
+               <th id="0C3" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C4" style="width:100px;" class="column-headers-background"></th>
+               <th id="0C5" style="width:104px;" class="column-headers-background"></th>
+               <th id="0C6" style="width:104px;" class="column-headers-background"></th>
+               <th id="0C7" style="width:108px;" class="column-headers-background"></th>
+               <th id="0C8" style="width:108px;" class="column-headers-background"></th>
+               <th id="0C9" style="width:108px;" class="column-headers-background"></th>
+               <th id="0C10" style="width:108px;" class="column-headers-background"></th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr style="height: 20px">
+               <th id="0R0" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s0" dir="ltr" colspan="11">
+                  <h4>REPORTE DE CONTEO POR USUARIO</h4>
+               </td>
+            </tr>
+            <tr style="height: 20px">
+               <th id="0R1" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s1" dir="ltr" colspan="11"></td>
+            </tr>
+            <tr style="height: 20px">
+               <th id="0R2" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s2" dir="ltr" colspan="9"></td>
+               <td class="s3" dir="ltr" colspan="2"><span style="font-weight:bold;">FECHA</span>: {{ date }}</td>
+            </tr>
+
+            {% for ubicacion in diferencias.captaciones_por_ubicacion %}
+               <tr style="height: 20px">
+                  <th id="0R3" style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s1" dir="ltr" colspan="11"><span style="font-weight:bold;">UBICACIÓN</span>: {{ ubicacion.UBICACION }}</td>
+               </tr>
+               <tr style="height: 20px">
+                  <th id="0R4" style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s4" dir="ltr">ARTICULO</td>
+                  <td class="s4" dir="ltr">DESCRIPCION</td>
+                  <td class="s5" dir="ltr">USUARIO</td>
+                  <td class="s5" dir="ltr">ALMACEN</td>
+                  <td class="s5" dir="ltr">LOTE</td>
+                  <td class="s5" dir="ltr">SERIE</td>
+                  <td class="s5" dir="ltr">MODELO</td>
+                  <td class="s5" dir="ltr">F. EXPIRACION</td>
+                  <td class="s5" dir="ltr">FISICO</td>
+                  <td class="s5" dir="ltr">SISTEMA</td>
+                  <td class="s5" dir="ltr">DIFERENCIA</td>
+               </tr>
+
+               {% for art in ubicacion.ARTICULOS %}
+                  <tr style="height: 20px">
+                     <th id="0R5" style="height: 20px;" class="row-headers-background">
+                        <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                     </th>
+                     <td class="s6" dir="ltr">{{art.ARTICULO}}</td>
+                     <td class="s7" dir="ltr">{{art.DESCRIPCION}}</td>
+                     <td class="s8" dir="ltr"></td>
+                     <td class="s8" dir="ltr" colspan="8"></td>
+                  </tr>
+                  {% set captaciones_length = art.CAPTACIONES | length %}
+                  {% set captaciones_nuevas_length = art.CAPTACIONES_NUEVAS | length %}
+                  {% if captaciones_nuevas_length > 0 %}
+                     {% set total_length = captaciones_length + captaciones_nuevas_length + 1 %}
+                  {% else %}
+                     {% set total_length = captaciones_length + captaciones_nuevas_length %}
+                  {% endif %}
+                  {% for captacion in art.CAPTACIONES %}
+                     <tr style="height: 20px">
+                        <th id="0R6" style="height: 20px;" class="row-headers-background">
+                           <div class="row-header-wrapper" style="line-height: 20px">{% if captacion.RECONTEO == "SI" %}R{% else %}|{% endif %}</div>
+                        </th>
+
+                        {% if loop.first %}
+                           <td class="s9" colspan="2" rowspan="{{total_length}}"></td>
+                        {% endif %}
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.USUARIO}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.ALMACEN}}</td>
+                        {% if captacion.LOTE is none %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr"></td>
+                        {% else %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.LOTE}}</td>
+                        {% endif %}
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.SERIE or ''}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.MODELO or ''}}</td>
+                        {% if captacion.FECHA_EXPIRACION is none %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr"></td>
+                        {% else %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.FECHA_EXPIRACION.strftime("%d/%m/%Y")}}</td>
+                        {% endif %}
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{% if costo %}${% endif %} {{captacion.FISICO}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{% if costo %}${% endif %} {{captacion.SISTEMA}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}">{% if costo %}${% endif %} {{captacion.DIFERENCIA}}</td>
+                     </tr>
+                  {% endfor %}
+
+                  {% if captaciones_nuevas_length > 0 %}
+                  <tr style="height: 20px">
+                     <th id="0R8" style="height: 20px;" class="row-headers-background">
+                        <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                     </th>
+                     <td class="s10 nuevo" dir="ltr">Nuevo</td>
+                  </tr>
+                  {% endif %}
+
+                  {% for captacion in art.CAPTACIONES_NUEVAS %}
+                     <tr style="height: 20px">
+                        <th id="0R6" style="height: 20px;" class="row-headers-background">
+                           <div class="row-header-wrapper" style="line-height: 20px">{% if captacion.RECONTEO == "SI" %}R{% else %}|{% endif %}</div>
+                        </th>
+
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.USUARIO}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.ALMACEN}}</td>
+                        {% if captacion.LOTE is none %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr"></td>
+                        {% else %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.LOTE}}</td>
+                        {% endif %}
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.SERIE or ''}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.MODELO or ''}}</td>
+                        {% if captacion.FECHA_EXPIRACION is none %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr"></td>
+                        {% else %}
+                           <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{{captacion.FECHA_EXPIRACION.strftime("%d/%m/%Y")}}</td>
+                        {% endif %}
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{% if costo %}${% endif %} {{captacion.FISICO}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}" dir="ltr">{% if costo %}${% endif %} {{captacion.SISTEMA}}</td>
+                        <td class="s10{% if captacion.RECONTEO == 'SI' %} re-conteo{% endif %}">{% if costo %}${% endif %} {{captacion.DIFERENCIA}}</td>
+                     </tr>
+                  {% endfor %}
+
+                  <tr style="height: 20px">
+                     <th id="0R9" style="height: 20px;" class="row-headers-background">
+                        <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                     </th>
+                     <td class="s8" colspan="8"></td>
+                     <td class="s12">{% if costo %}${% endif %} {{art.TOTAL_FISICO}}</td>
+                     <td class="s12" dir="ltr">{% if costo %}${% endif %} {{art.TOTAL_SISTEMA}}</td>
+                     <td class="s12">{% if costo %}${% endif %} {{art.TOTAL_DIFERENCIA}}</td>
+                  </tr>
+
+               {% endfor %}
+               <tr style="height: 20px">
+                  <th id="0R27" style="height: 20px;" class="row-headers-background">
+                     <div class="row-header-wrapper" style="line-height: 20px">|</div>
+                  </th>
+                  <td class="s5" colspan="8">TOTAL</td>
+                  <td class="s5">{{ubicacion.TOTAL_FISICO}}</td>
+                  <td class="s5">{{ubicacion.TOTAL_SISTEMA}}</td>
+                  <td class="s5">{{ubicacion.TOTAL_DIFERENCIA}}</td>
+               </tr>
+            {% endfor %}
+            <tr style="height: 20px">
+               <th id="0R53" style="height: 20px;" class="row-headers-background">
+                  <div class="row-header-wrapper" style="line-height: 20px">|</div>
+               </th>
+               <td class="s21" colspan="8">DIFERENCIAS TOTAL</td>
+               <td class="s21"></td>
+               <td class="s21"></td>
+               <td class="s21">{{diferencias.DIFERENCIA_TOTAL}}</td>
+            </tr>
+         </tbody>
+      </table>
+   </div>
+</div>
+
+<div class="signature-section print-section">
+   <h5 class="signature-section__title">Firmas de responsabilidad</h5>
+   <p class="signature-section__note">Estas firmas certifican la revisión, aprobación y custodia de los resultados del inventario físico.</p>
+   <p class="signature-section__approved">Aprobado digitalmente por: {{ usuario_aprobacion or '________________' }}{% if fecha_aprobacion %} el {{ fecha_aprobacion.strftime("%d/%m/%Y %H:%M") }}{% endif %}</p>
+   <div class="signature-section__grid">
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Jefe de Inventario</span>
+      </div>
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Supervisor de Almacén</span>
+      </div>
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Gerente Financiero</span>
+      </div>
+      <div class="signature-slot">
+         <span class="signature-line"></span>
+         <span class="signature-role">Auditor Interno</span>
+      </div>
+   </div>
+</div>

@@ -1,0 +1,5 @@
+include disagro_i/schema.sql
+graft disagro_i/static
+graft disagro_i/templates
+graft disagro_i/clases
+global-exclude *.pyc

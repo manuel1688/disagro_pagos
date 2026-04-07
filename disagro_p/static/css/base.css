@@ -1,0 +1,29 @@
+.nav-item .active .nav-link{
+    color: #1d2124 !important;
+    border-bottom-color: #1d2124 !important;
+  }
+
+  .navbar-collapse .active a{
+    border-bottom: solid #1d2124 5px;
+  }
+
+  .jumbotron {
+    background-color: rgb(0 0 0 / 8%) !important;
+    border-radius: .3rem !important;
+    margin-bottom: 0rem !important;
+    padding: 1rem 1rem !important;
+  }
+
+  .bold{
+    font-weight: bold !important;
+  }
+
+  .centrado_vertical{
+    vertical-align: middle !important;
+  }
+
+  .btn-tabla{
+    padding: 0.1rem 0.4rem !important;
+    line-height: 1.2 !important;
+    border-radius: .2rem !important;
+  }

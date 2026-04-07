@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css')}}">
+    {% block title %}
+    <title>DISAGRO - Sistema de Inventario</title>
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="landing-container">
+  <div class="landing-card">
+    <div class="landing-header">
+      <div class="logo-container">
+        <i class="fas fa-warehouse fa-3x"></i>
+      </div>
+      <h1 class="app-title">DISAGRO</h1>
+      <p class="app-subtitle">Sistema de Gestión de Inventario</p>
+    </div>
+
+    <div class="landing-body">
+      <div class="status-message">
+        <i class="fas fa-info-circle"></i>
+        <span>No hay ninguna sesión activa</span>
+      </div>
+
+      <div class="features-list">
+        <div class="feature-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Gestión completa de inventario</span>
+        </div>
+        <div class="feature-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Toma física y reconteo</span>
+        </div>
+        <div class="feature-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Reportes y análisis detallados</span>
+        </div>
+      </div>
+
+      <div class="cta-container">
+        <a href="{{ url_for('auth.iniciar_sesion') }}" class="btn-login">
+          <i class="fas fa-sign-in-alt"></i>
+          Iniciar Sesión
+        </a>
+      </div>
+    </div>
+
+    <div class="landing-footer">
+      <p class="text-muted small mb-0">
+        Sistema de inventario para DISAGRO &copy; 2025
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

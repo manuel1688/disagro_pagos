@@ -1,0 +1,378 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/diferencias.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/conteo.css') }}">
+    {% block title %}
+    <title>Reporte de conteo</title>
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+<input type="hidden" id="id_planificacion" value="{{ id_planificacion }}">
+{% set catalog = report_catalog | default([]) %}
+{% set active_candidates = catalog | selectattr('key', 'equalto', selected_report) | list %}
+{% if active_candidates %}
+   {% set active_option = active_candidates[0] %}
+{% else %}
+   {% set active_option = None %}
+{% endif %}
+{% set current_key = selected_report | default('') %}
+{% set observacion_cierre = observacion_cierre | default(None) %}
+{% set usuario_aprobacion = usuario_aprobacion | default(None) %}
+{% set fecha_aprobacion = fecha_aprobacion | default(None) %}
+{% set planificacion_nombre = planificacion_nombre | default('') %}
+{% set planificacion_estado = planificacion_estado | default('') %}
+{% set planificacion_aprobada = planificacion_aprobada | default(False) %}
+{% set has_observacion = observacion_cierre or usuario_aprobacion or fecha_aprobacion %}
+{% set diferencias = conteo_presentacion %}
+{% set costo = False %}
+{% set solo_nuevos = False %}
+
+<div class="container conteo-filter-container no-print">
+   <div class="filter-card">
+      <div class="d-flex justify-content-between align-items-start">
+         <div>
+            <h2 class="mb-1">Filtros del reporte</h2>
+            <p class="text-muted mb-0">Define el alcance del conteo antes de generar la tabla.</p>
+         </div>
+         <span class="planificacion-chip">Modo avanzado</span>
+      </div>
+      <form id="conteoFilterForm" method="get" class="conteo-filters" novalidate>
+         <section class="filter-section" data-filter-group="captadores" data-required="true">
+            <header class="filter-section__header">
+               <div>
+                  <h3 class="mb-0">Usuarios captadores</h3>
+                  <small class="text-muted">Selecciona al menos un captador asignado a la planificación.</small>
+               </div>
+               <span class="badge rounded-pill text-bg-dark">Obligatorio</span>
+            </header>
+            <div class="filter-actions">
+               <button type="button" class="btn btn-link btn-sm" data-filter-action="select-all" data-filter-target="captadores">Seleccionar todos</button>
+               <button type="button" class="btn btn-link btn-sm" data-filter-action="reset" data-filter-target="captadores">Restablecer</button>
+            </div>
+            <div class="filter-checkbox-group" data-filter-target="captadores">
+               {% for option in conteo_filters.options.captadores %}
+               <label class="filter-checkbox">
+                  <input type="checkbox" name="captadores" value="{{ option.value }}" data-label="{{ option.label }}" {% if option.value in conteo_filters.selected.captadores %}checked{% endif %}>
+                  <span>{{ option.label }}</span>
+               </label>
+               {% endfor %}
+               <label class="filter-checkbox">
+                  <input type="checkbox" name="captadores" value="SIN_CAPTADOR" data-label="{{ conteo_filters.labels.sin_captador }}" {% if conteo_filters.selected.include_sin %}checked{% endif %}>
+                  <span>{{ conteo_filters.labels.sin_captador }}</span>
+               </label>
+            </div>
+            <div class="filter-chip-collection" data-chip-group="captadores">
+               {% if conteo_filters.selected.captadores_all and not conteo_filters.selected.include_sin %}
+                  <span class="chip chip-muted" data-default-chip>Todos los captadores</span>
+               {% endif %}
+               {% if not (conteo_filters.selected.captadores_all and not conteo_filters.selected.include_sin) %}
+                  {% for value in conteo_filters.selected.captadores_display %}
+                     {% if value == 'SIN_CAPTADOR' %}
+                     <span class="chip" data-chip-value="SIN_CAPTADOR">{{ conteo_filters.labels.sin_captador }}<button type="button" class="chip-remove" aria-label="Quitar" data-chip-remove>&times;</button></span>
+                     {% else %}
+                     <span class="chip" data-chip-value="{{ value }}">{{ conteo_filters.labels.captadores.get(value, value) }}<button type="button" class="chip-remove" aria-label="Quitar" data-chip-remove>&times;</button></span>
+                     {% endif %}
+                  {% endfor %}
+               {% endif %}
+            </div>
+         </section>
+
+         <div class="row g-4 filter-grid">
+            <div class="col-lg-6">
+               <section class="filter-section" data-filter-group="ubicaciones">
+                  <header class="filter-section__header">
+                     <div>
+                        <h3 class="mb-0">Ubicaciones</h3>
+                        <small class="text-muted">Si no seleccionas ninguna, se incluirán todas las planificadas.</small>
+                     </div>
+                     <span class="badge rounded-pill bg-secondary text-uppercase">Opcional</span>
+                  </header>
+                  <div class="filter-actions">
+                     <button type="button" class="btn btn-link btn-sm" data-filter-action="clear" data-filter-target="ubicaciones">Incluir todas</button>
+                     <button type="button" class="btn btn-link btn-sm" data-filter-action="select-all" data-filter-target="ubicaciones">Seleccionar ubicaciones</button>
+                  </div>
+                  <div class="filter-checkbox-group" data-filter-target="ubicaciones">
+                     {% for option in conteo_filters.options.ubicaciones %}
+                     <label class="filter-checkbox">
+                        <input type="checkbox" name="ubicaciones" value="{{ option.value }}" data-label="{{ option.label }}" {% if option.value in conteo_filters.selected.ubicaciones %}checked{% endif %}>
+                        <span>{{ option.label }}</span>
+                     </label>
+                     {% endfor %}
+                  </div>
+                  <div class="filter-chip-collection" data-chip-group="ubicaciones">
+                     {% if conteo_filters.selected.ubicaciones_all %}
+                     <span class="chip chip-muted" data-default-chip>Todas las ubicaciones</span>
+                     {% endif %}
+                     {% for value in conteo_filters.selected.ubicaciones %}
+                     <span class="chip" data-chip-value="{{ value }}">{{ conteo_filters.labels.ubicaciones.get(value, value) }}<button type="button" class="chip-remove" aria-label="Quitar" data-chip-remove>&times;</button></span>
+                     {% endfor %}
+                  </div>
+               </section>
+            </div>
+            <div class="col-lg-6">
+               <section class="filter-section" data-filter-group="almacenes">
+                  <header class="filter-section__header">
+                     <div>
+                        <h3 class="mb-0">Almacenes</h3>
+                        <small class="text-muted">La opción "Todas" agrupa todos los almacenes asignados a la planificación.</small>
+                     </div>
+                     <span class="badge rounded-pill bg-secondary text-uppercase">Opcional</span>
+                  </header>
+                  <div class="filter-actions">
+                     <button type="button" class="btn btn-link btn-sm" data-filter-action="clear" data-filter-target="almacenes">Incluir todos</button>
+                     <button type="button" class="btn btn-link btn-sm" data-filter-action="select-all" data-filter-target="almacenes">Seleccionar almacenes</button>
+                  </div>
+                  <div class="filter-checkbox-group" data-filter-target="almacenes">
+                     {% for option in conteo_filters.options.almacenes %}
+                     <label class="filter-checkbox">
+                        <input type="checkbox" name="almacenes" value="{{ option.value }}" data-label="{{ option.label }}" {% if option.value in conteo_filters.selected.almacenes %}checked{% endif %}>
+                        <span>{{ option.label }}</span>
+                     </label>
+                     {% endfor %}
+                  </div>
+                  <div class="filter-chip-collection" data-chip-group="almacenes">
+                     {% if conteo_filters.selected.almacenes_all %}
+                     <span class="chip chip-muted" data-default-chip>Todos los almacenes</span>
+                     {% endif %}
+                     {% for value in conteo_filters.selected.almacenes %}
+                     <span class="chip" data-chip-value="{{ value }}">{{ conteo_filters.labels.almacenes.get(value, value) }}<button type="button" class="chip-remove" aria-label="Quitar" data-chip-remove>&times;</button></span>
+                     {% endfor %}
+                  </div>
+               </section>
+            </div>
+         </div>
+
+         <div class="filter-footer">
+            <button type="submit" class="btn btn-primary">
+               <i class="fa fa-filter" aria-hidden="true"></i> Aplicar filtros
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-filter-reset="true">Limpiar todo</button>
+         </div>
+      </form>
+   </div>
+</div>
+
+<div class="container report-shell">
+   <div class="report-toolbar no-print">
+      <div class="report-toolbar__left">
+         <div class="report-toolbar__badge">
+            <span class="report-toolbar__eyebrow">Reporte activo</span>
+            <span class="report-toolbar__title">
+               {{ active_option.label if active_option else 'Conteo por usuario' }}
+               {% if planificacion_nombre %}
+               <span class="report-toolbar__plan-name">· {{ planificacion_nombre }}</span>
+               {% endif %}
+            </span>
+            {% if planificacion_correlativo %}
+            <small class="report-toolbar__meta text-muted">Correlativo: {{ planificacion_correlativo }}</small>
+            {% endif %}
+            <small class="report-toolbar__meta text-muted">Registros: {{ conteo_total_registros }}</small>
+         </div>
+      </div>
+      <div class="report-toolbar__right">
+         <a class="btn btn-outline-dark btn-sm me-2" href="{{ conteo_export_url }}">
+            <i class="fa fa-download" aria-hidden="true"></i> Exportar conteo (XLS)
+         </a>
+         {% set btn_observacion_clases = 'btn btn-outline-info btn-sm me-2' %}
+         <button id="btn-acta-aprobacion"
+                 class="{{ btn_observacion_clases }}{% if not usuario_aprobacion %} d-none{% endif %}"
+                 type="button"
+                 data-observation-open
+                 data-has-observation="{{ 1 if has_observacion else 0 }}"
+                 data-planificacion-nombre="{{ planificacion_nombre or '' }}"
+                 data-planificacion-estado="{{ planificacion_estado or '' }}"
+                 data-planificacion-correlativo="{{ planificacion_correlativo or '' }}">
+            <i class="fa fa-file-signature" aria-hidden="true"></i> Ver acta de aprobación
+         </button>
+         <button class="btn btn-primary btn-sm" type="button" data-report-selector="open">
+            <i class="fa fa-th-large" aria-hidden="true"></i> Cambiar reporte
+         </button>
+      </div>
+   </div>
+
+   <div id="reportSelector" class="report-selector no-print" data-state="closed" data-active-key="{{ current_key }}">
+      <div class="report-selector__backdrop" data-report-selector="close"></div>
+      <div class="report-selector__panel">
+         <div class="report-selector__header">
+            <h5 class="mb-0">Seleccionar reporte</h5>
+            <button type="button" class="btn btn-outline-secondary btn-sm" aria-label="Cerrar" data-report-selector="close">
+               <i class="fa fa-times" aria-hidden="true"></i>
+            </button>
+         </div>
+         <div class="report-selector__search">
+            <div class="input-group input-group-sm">
+               <span class="input-group-text"><i class="fa fa-search" aria-hidden="true"></i></span>
+               <input type="search" id="reportSearchInput" class="form-control" placeholder="Buscar reporte">
+            </div>
+         </div>
+         <ul class="report-selector__list" id="reportSelectorList">
+            {% for option in catalog %}
+               {% if not option.required_role or validar_area(option.required_role, g.user.usuario) %}
+               <li class="report-selector__item{% if option.key == current_key %} is-active{% endif %}" data-key="{{ option.key }}" data-type="{{ option.type }}" data-href="{{ option.url }}">
+                  <div class="report-selector__icon">
+                     <i class="fa {{ option.icon }}" aria-hidden="true"></i>
+                  </div>
+                  <div class="report-selector__content">
+                     <div class="report-selector__title">{{ option.label }}</div>
+                     <div class="report-selector__description">{{ option.description }}</div>
+                  </div>
+                  <div class="report-selector__cta">
+                     {% if option.key == current_key %}
+                     <span class="report-selector__badge-active">Actual</span>
+                     {% else %}
+                     <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                     {% endif %}
+                  </div>
+               </li>
+               {% endif %}
+            {% endfor %}
+         </ul>
+         {% if not catalog %}
+         <div class="alert alert-warning mt-2 mb-0" role="alert">
+            No se encontraron reportes configurados.
+         </div>
+         {% endif %}
+      </div>
+   </div>
+
+   <div class="report-shell__content">
+      {% include 'reporte/partials/conteo_table.html' %}
+   </div>
+</div>
+
+<div id="observationModal" class="approval-modal preview-shell" data-state="closed">
+    <div class="approval-modal__backdrop" data-observation-action="close"></div>
+    <div class="approval-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="observationModalTitle">
+       <div class="approval-modal__header">
+          <div class="approval-modal__icon">
+            <i class="fa fa-file-signature" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h5 id="observationModalTitle" class="mb-1">Acta de aprobación</h5>
+            <p class="mb-0 text-muted" data-observation-plan>Planificación: {{ planificacion_nombre or '-' }}</p>
+            <p class="mb-0 text-muted" data-observation-status>Estado del reporte: {{ planificacion_estado or '-' }}</p>
+          </div>
+         <button type="button" class="btn btn-outline-secondary btn-sm" data-observation-action="close" aria-label="Cerrar">
+            <i class="fa fa-times" aria-hidden="true"></i>
+         </button>
+      </div>
+      <div class="approval-modal__body">
+         <div class="observation-empty alert alert-secondary" role="alert" data-observation-empty>
+            No se registró acta de aprobación para este cierre.
+         </div>
+         <div class="observation-details" data-observation-details hidden>
+            <p class="observation-meta"><strong>Nombre de la planificación:</strong> <span data-observation-plan-name>{{ planificacion_nombre or '-' }}</span></p>
+            <p class="observation-meta"><strong>Estado del reporte:</strong> <span data-observation-status-value>{{ planificacion_estado or '-' }}</span></p>
+            <p class="observation-meta"><strong>Responsable:</strong> <span data-observation-user>{{ usuario_aprobacion or '-' }}</span></p>
+            <p class="observation-meta"><strong>Fecha de aprobación:</strong> <span data-observation-date>{% if fecha_aprobacion %}{{ fecha_aprobacion.strftime("%d/%m/%Y %H:%M") }}{% else %}-{% endif %}</span></p>
+            <p class="observation-meta"><strong>Aprobado digitalmente por:</strong> <span data-observation-digital>{{ usuario_aprobacion or '-' }}</span></p>
+            <p class="observation-meta"><strong>Correlativo:</strong> <span data-observation-correlativo>{{ planificacion_correlativo or '-' }}</span></p>
+            <div class="observation-text-wrapper">
+               <p class="fw-semibold mb-1">Detalle del acta</p>
+               <p class="observation-text" data-observation-text>{{ observacion_cierre or 'Sin detalle registrado en el acta.' }}</p>
+            </div>
+            <div class="signature-section signature-section--modal">
+               <h6 class="signature-section__title">Firmas registradas</h6>
+               <p class="signature-section__note">Confirma la cadena de custodia asociada a esta acta.</p>
+               <div class="signature-section__grid">
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Jefe de Inventario</span>
+                  </div>
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Supervisor de Almacén</span>
+                  </div>
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Gerente Financiero</span>
+                  </div>
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Auditor Interno</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="approval-modal__actions">
+            <button type="button" class="btn btn-outline-secondary" data-observation-action="close">Cerrar</button>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-observation-action="print" data-observation-print disabled>
+               <i class="fa fa-print"></i> Imprimir acta
+            </button>
+            <button type="button" class="btn btn-primary" data-observation-action="print-full" data-observation-print-full disabled>
+               <i class="fa fa-file-pdf"></i> Imprimir acta completa
+            </button>
+         </div>
+      </div>
+   </div>
+</div>
+
+<script type="module" src="{{ url_for('static', filename='js/diferencias.js')}}"></script>
+<script type="module" src="{{ url_for('static', filename='js/conteo_filters.js') }}"></script>
+<script>
+(function() {
+   const selector = document.getElementById('reportSelector');
+   if (!selector) {
+      return;
+   }
+
+   const openButtons = document.querySelectorAll('[data-report-selector="open"]');
+   const closeButtons = document.querySelectorAll('[data-report-selector="close"]');
+   const searchInput = document.getElementById('reportSearchInput');
+   const items = Array.from(selector.querySelectorAll('.report-selector__item'));
+   const activeKey = selector.getAttribute('data-active-key') || '';
+
+   const setState = (state) => {
+      selector.setAttribute('data-state', state);
+      document.body.classList.toggle('report-selector-open', state === 'open');
+   };
+
+   openButtons.forEach(btn => {
+      btn.addEventListener('click', () => setState('open'));
+   });
+
+   closeButtons.forEach(btn => {
+      btn.addEventListener('click', () => setState('closed'));
+   });
+
+   if (searchInput) {
+      searchInput.addEventListener('input', (event) => {
+         const term = event.target.value.trim().toLowerCase();
+         items.forEach(item => {
+            const text = item.innerText.toLowerCase();
+         const matches = !term || text.includes(term);
+            item.style.display = matches ? '' : 'none';
+         });
+      });
+   }
+
+   items.forEach(item => {
+      item.addEventListener('click', () => {
+         const type = item.getAttribute('data-type');
+         const url = item.getAttribute('data-href');
+         const key = item.getAttribute('data-key');
+
+         if (!url) {
+            return;
+         }
+
+         if (key === activeKey && type !== 'download') {
+            setState('closed');
+            return;
+         }
+
+         if (type === 'download') {
+            window.open(url, '_blank');
+            setState('closed');
+            return;
+         }
+
+         window.location.href = url;
+      });
+   });
+})();
+</script>
+{% endblock %}

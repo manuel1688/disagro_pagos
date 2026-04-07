@@ -1,0 +1,226 @@
+/* Estilos específicos para la pantalla de filtros de historial */
+
+:root {
+  --historial-primary: #1f5c99;
+  --historial-primary-light: rgba(31, 92, 153, 0.08);
+  --historial-border: #e3e6ef;
+  --historial-muted: #6c757d;
+  --historial-highlight: #f8f9fc;
+}
+
+.historial-wrapper {
+  padding-bottom: 4rem;
+}
+
+.historial-header {
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(31, 92, 153, 0.92), rgba(55, 125, 255, 0.85));
+  color: #fff;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(31, 92, 153, 0.15);
+}
+
+.historial-header::after {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  filter: blur(0.5px);
+}
+
+.historial-header h1,
+.historial-header h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.historial-header .lead,
+.historial-header .small {
+  font-size: 0.85rem;
+  margin-bottom: 0;
+  color: #ffffff;
+}
+
+.filter-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--historial-border);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+  padding: 1.75rem;
+}
+
+.filter-card h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1f3b57;
+}
+
+.form-control-underline {
+  border: none;
+  border-bottom: 2px solid var(--historial-border);
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control-underline:focus {
+  box-shadow: none;
+  border-bottom-color: var(--historial-primary);
+}
+
+.quick-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.quick-filter-btn {
+  border-radius: 999px;
+  border: 1px solid var(--historial-border);
+  padding: 0.5rem 1.1rem;
+  background: #fff;
+  color: var(--historial-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.quick-filter-btn:hover {
+  border-color: var(--historial-primary);
+  color: var(--historial-primary);
+  background: var(--historial-primary-light);
+}
+
+.quick-filter-btn.active {
+  background: var(--historial-primary);
+  border-color: var(--historial-primary);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(31, 92, 153, 0.35);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+  padding: 0.6rem 1.4rem;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.secondary-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--historial-border);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  padding: 1.5rem;
+}
+
+.secondary-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f3b57;
+}
+
+
+.planificacion-list {
+  margin: 1rem 0 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.planificacion-item {
+  border: 1px solid var(--historial-border);
+  border-radius: 14px;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+}
+
+.planificacion-item:hover,
+.planificacion-item.active {
+  border-color: var(--historial-primary);
+  box-shadow: 0 10px 24px rgba(31, 92, 153, 0.16);
+  transform: translateY(-2px);
+}
+
+.planificacion-item .info {
+  display: flex;
+  flex-direction: column;
+}
+
+.planificacion-item .info span {
+  font-size: 0.85rem;
+  color: var(--historial-muted);
+}
+
+.planificacion-item strong {
+  color: #1f3b57;
+  font-size: 0.9rem;
+}
+
+.planificacion-chip {
+  border-radius: 999px;
+  background: var(--historial-highlight);
+  color: var(--historial-primary);
+  padding: 0.35rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.empty-state {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px dashed var(--historial-border);
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--historial-muted);
+}
+
+@media (max-width: 991.98px) {
+  .historial-header {
+    padding: 0.85rem 1rem;
+  }
+
+  .historial-header h1,
+  .historial-header h4 {
+    font-size: 1rem;
+  }
+
+  .filter-card, .secondary-card {
+    padding: 1.3rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .quick-filter-group {
+    gap: 0.5rem;
+  }
+
+  .planificacion-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .planificacion-chip {
+    align-self: flex-start;
+  }
+}

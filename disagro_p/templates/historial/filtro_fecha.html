@@ -1,0 +1,115 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/historial.css')}}">
+    {% block title %}
+    <title>Historial</title>
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="container historial-wrapper">
+  <div class="historial-header mb-3">
+    <h4 class="mb-1">Historial de Planificaciones</h4>
+    <p class="small mb-0">
+      Filtra por rango de fechas o selecciona una planificación reciente.
+    </p>
+  </div>
+
+  <div class="row gy-4">
+    <div class="col-lg-7">
+      <div class="filter-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="mb-0">Filtrar por fechas</h2>
+          <span class="planificacion-chip">Modo avanzado</span>
+        </div>
+
+        <form id="historialFilterForm" action="/historial/historiales/archivado" method="POST" novalidate>
+          <div class="row g-4">
+            <div class="col-sm-6">
+              <label for="correlativo" class="form-label fw-semibold">Correlativo</label>
+              <input type="text" id="correlativo" name="correlativo" class="form-control form-control-underline" value="{{ correlativo_prefill or '' }}" placeholder="Ej. CI-PAIS-...">
+              <small class="text-muted d-block mt-2">Filtra por el correlativo asignado (opcional).</small>
+            </div>
+            <div class="col-sm-6">
+              <label for="nombre_planificacion" class="form-label fw-semibold">Nombre de la planificación</label>
+              <input type="text" id="nombre_planificacion" name="nombre_planificacion" class="form-control form-control-underline" value="{{ nombre_prefill or '' }}" placeholder="Ej. Inventario Bodega">
+              <small class="text-muted d-block mt-2">Puedes buscar por nombre exacto o parcial.</small>
+            </div>
+          </div>
+
+          <div class="row g-4">
+            <div class="col-sm-6">
+              <label for="start_date" class="form-label fw-semibold">Fecha de inicio (archivado)</label>
+              <input type="date" id="start_date" name="start_date" class="form-control form-control-underline" value="{{ start_prefill or '' }}">
+              <small class="text-muted d-block mt-2">Usamos la fecha en que la planificación fue archivada.</small>
+            </div>
+            <div class="col-sm-6">
+              <label for="end_date" class="form-label fw-semibold">Fecha de fin (archivado)</label>
+              <input type="date" id="end_date" name="end_date" class="form-control form-control-underline" value="{{ end_prefill or '' }}">
+              <small class="text-muted d-block mt-2">Incluye los registros archivados hasta esta fecha.</small>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <p class="fw-semibold text-uppercase text-muted small mb-3">Filtros rápidos</p>
+            <div class="quick-filter-group" role="group" aria-label="Filtros rápidos por rango de fechas">
+              <button type="button" class="quick-filter-btn" data-range="today">Hoy</button>
+              <button type="button" class="quick-filter-btn" data-range="yesterday">Ayer</button>
+              <button type="button" class="quick-filter-btn" data-range="last7">Últimos 7 días</button>
+              <button type="button" class="quick-filter-btn" data-range="last30">Últimos 30 días</button>
+              <button type="button" class="quick-filter-btn" data-range="thisMonth">Este mes</button>
+              <button type="button" class="quick-filter-btn" data-range="lastMonth">Mes anterior</button>
+            </div>
+          </div>
+
+          <div class="mt-5 action-buttons">
+            <button type="submit" class="btn btn-primary">Buscar historial</button>
+            <button type="button" id="clearFilters" class="btn btn-outline-secondary">Limpiar filtros</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="secondary-card h-100 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start gap-3">
+          <h3 class="mb-0">Últimas 10 planificaciones</h3>
+          <span class="badge bg-light text-dark">Vista rápida</span>
+        </div>
+
+        {% if historiales %}
+        <div class="planificacion-list" id="planificacionList">
+          {% for historial in historiales[:10] %}
+          {% set fecha_archivo = historial.FECHA_APROBACION if historial.FECHA_APROBACION else historial.FECHA %}
+          <button type="button"
+                  class="planificacion-item text-start"
+                  data-start="{{ fecha_archivo.strftime('%Y-%m-%d') if fecha_archivo else '' }}"
+                  data-end="{{ fecha_archivo.strftime('%Y-%m-%d') if fecha_archivo else '' }}"
+                  data-id="{{ historial.ID }}"
+                  data-report-url="{{ url_for('reporte_bp.diferencias_archivadas', id_planificacion=historial.ID) }}">
+            <div class="info">
+              <strong>Planificación #{{ historial.ID }}</strong>
+              <span>
+                Archivada el {{ fecha_archivo.strftime('%d/%m/%Y') if fecha_archivo else 'Sin fecha registrada' }}
+              </span>
+            </div>
+            <span class="planificacion-chip">Ver historial</span>
+          </button>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <p class="mb-1 fw-semibold">Aún no hay planificaciones archivadas</p>
+          <p class="mb-0">Cuando existan registros los verás aquí para seleccionarlos rápidamente.</p>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/historial_filtros.js')}}"></script>
+{% endblock %}

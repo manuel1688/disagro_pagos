@@ -1,0 +1,228 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <title>Configuración de maestros</title>
+{% endblock %} 
+
+{% block content %}
+<br>
+<div class="container">
+  <h2>Maestros globales</h2>
+  <br>
+  
+  <div class="row">
+    <div class="col-md-12">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="btn btn-primary" type="button">Categoria 1</span> 
+        </div>
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="input_categoria_1" aria-describedby="area_input_categoria_1" accept=".csv">
+          <label type="label" id="label_categoria_1" class="custom-file-label" for="inputGroupFile01">Choose file</label>
+        </div>
+      </div>
+      <button disabled class="btn btn-primary" type="button" id="boton_subir_categoria_1">Subir Categoria 1 <span class="fa fa-upload"></span> </button>
+      {% if categoria_1 is not none %}
+        <a href="/categoria/categorias/1" class="btn btn-primary" type="button" id="boton_ver_categoria_1">Datos <span class="fa fa-database"></span> </a>
+        <br>
+        <br>
+        <div class="alert alert-primary d-block" role="alert" id="contenedor_resultado_categoria_1">
+         Actualizado: {{categoria_1.ULTIMA_SUBIDA.strftime('%d-%m-%Y %H:%M:%S')}}
+        </div>
+      {% else %}
+        <a href="/categoria/categorias/1" class="btn btn-primary d-none" type="button" id="boton_ver_categoria_1">Datos <span class="fa fa-database"></span> </a>
+        <br>
+        <br>
+        <div class="alert alert-primary d-none" role="alert" id="contenedor_resultado_categoria_1"></div>
+      {% endif %}
+      
+    </div>
+  </div>
+  <br>
+  <br>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="btn btn-primary">Categoria 2</span>
+        </div>
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="input_categoria_2" aria-describedby="area_input_categoria_2" accept=".csv">
+          <label type="label" id="label_categoria_2" class="custom-file-label" for="inputGroupFile01">Choose file</label>
+        </div>
+      </div>
+      <button disabled class="btn btn-primary" type="button" id="boton_subir_categoria_2">Subir Categoria 2 <span class="fa fa-upload"></span> </button>
+      {% if categoria_2 is not none %}
+        <a href="/categoria/categorias/2" class="btn btn-primary" type="button" id="boton_ver_categoria_2">Datos <span class="fa fa-database"></span> </a>
+        <br>
+        <br>
+        <div class="alert alert-primary d-block" role="alert" id="contenedor_resultado_categoria_2">
+          Actualizado: {{categoria_2.ULTIMA_SUBIDA.strftime('%d-%m-%Y %H:%M:%S')}}
+         </div>
+      {% else %}
+        <a href="/categoria/categorias/2" class="btn btn-primary d-none" type="button" id="boton_ver_categoria_2">Datos <span class="fa fa-database"></span> </a>
+        <br>
+        <br>
+        <div class="alert alert-primary d-none" role="alert" id="contenedor_resultado_categoria_2"></div>
+      {% endif %}
+    </div>
+  </div>
+  <br>
+  <br>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="btn btn-primary">Artículos</span>
+        </div>
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="input_articulos" aria-describedby="area_input_articulos" accept=".csv">
+            <label id="label_articulos" class="custom-file-label" for="input_articulos">Choose file</label>
+        </div>
+      </div>
+      <button disabled class="btn btn-primary" type="button" id="boton_subir_articulos">Subir articulos <span class="fa fa-upload"></span> </button>
+      {% if articulos is not none %}
+        <a href="/articulo/articulos" class="btn btn-primary" type="button" id="boton_ver_articulos">Datos <span class="fa fa-database"></span> </a>
+        <!-- <button class="btn btn-danger" type="button" id="boton_limpiar_articulos">Limpiar articulos <span class="fa fa-trash"></span> </button> -->
+        <br>
+        <br>
+        <div class="alert alert-primary d-block" role="alert" id="contenedor_resultado_articulos">
+          Actualizado: {{articulos.ULTIMA_SUBIDA.strftime('%d-%m-%Y %H:%M:%S')}}
+         </div>
+      {% else %}
+        <a href="/articulo/articulos" class="btn btn-primary d-none" type="button" id="boton_ver_articulos">Datos <span class="fa fa-database"></span> </a>
+        <!-- <button disabled class="btn btn-danger d-none" type="button" id="boton_limpiar_articulos">Limpiar articulos <span class="fa fa-trash"></span> </button> -->
+        <br>
+        <br>
+        <div class="alert alert-primary d-none" role="alert" id="contenedor_resultado_articulos"></div>
+      {% endif %}
+    </div>
+  </div>
+  <br>
+  <br>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="btn btn-primary">Estados</span>
+        </div>
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="input_estado" aria-describedby="area_input_estado" accept=".csv">
+          <label id="label_estado" class="custom-file-label" for="inputGroupFile01">Choose file</label>
+        </div>
+      </div>
+      <button disabled class="btn btn-primary" type="button" id="boton_subir_estado">Subir estados <span class="fa fa-upload"></span> </button>
+      {% if estado is not none %}
+        <a href="/estado/estados" class="btn btn-primary" type="button" id="boton_ver_estado">Datos <span class="fa fa-database"></span> </a>
+        <br>
+        <br>
+        <div class="alert alert-primary d-block" role="alert" id="contenedor_resultado_estado">
+          Actualizado: {{estado.ULTIMA_SUBIDA.strftime('%d-%m-%Y %H:%M:%S')}}
+         </div>
+      {% else %}
+        <a href="/estado/estados" class="btn btn-primary d-none" type="button" id="boton_ver_estado">Datos <span class="fa fa-database"></span> </a>
+        <br>
+        <br>
+        <div class="alert alert-primary d-none" role="alert" id="contenedor_resultado_estado"></div>
+      {% endif %}
+    </div>
+  </div>
+  <br>
+  <br>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="btn btn-primary">Almacen</span>
+        </div>
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="input_almacen" aria-describedby="area_input_almacen" accept=".csv">
+          <label id="label_almacen" class="custom-file-label" for="inputGroupFile01">Choose file</label>
+        </div>
+      </div>
+      <button disabled class="btn btn-primary" type="button" id="boton_subir_almacen">Subir almacenes <span class="fa fa-upload"></span> </button>
+      {% if almacen is not none %}
+        <a href="/almacen/almacenes" class="btn btn-primary" type="button" id="boton_ver_almacen">Datos <span class="fa fa-database"></span> </a>
+        <br>
+        <br>
+        <div class="alert alert-primary d-block" role="alert" id="contenedor_resultado_almacen">
+          Actualizado: {{almacen.ULTIMA_SUBIDA.strftime('%d-%m-%Y %H:%M:%S')}}
+         </div>
+      {% else %}
+        <a href="/almacen/almacenes" class="btn btn-primary d-none" type="button" id="boton_ver_almacen">Datos <span class="fa fa-database"></span> </a>
+        <br>
+        <br>
+        <div class="alert alert-primary d-none" role="alert" id="contenedor_resultado_almacen"></div>
+      {% endif %}
+    </div>
+  </div>
+  <!-- <hr> -->
+  <!-- <h2>Regionales:</h2> -->
+  <div class="row d-none">
+    <div class="col-md-12">
+      <div class="input-group input-group-sm mb-2">
+        <div class="input-group-prepend">
+          <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">PAÍS</span>
+        </div>
+        <input 
+          readonly
+          id="input_pais" 
+          data-historico="true"
+          data-ultimo_valor="ubicaciones"  
+          data-requerido="true" 
+          data-nombre="UBICACION"
+          autocomplete="off" 
+          type="text" 
+          value="{{pais}}" 
+          name="input_pais" 
+          list="paises" 
+          class="form-control campo_codigo input_formulario" 
+        onkeyup="this.value = this.value.toUpperCase();">
+        <datalist id="paises">
+          {% for pais in paises %}
+            <option data-codigo="{{pais}}" value="{{pais}}">{{pais}}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+    </div>
+  </div>
+  <br>
+  <br>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="btn btn-primary">Ubicación</span>
+        </div>
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="input_ubicacion" aria-describedby="area_input_ubicacion" accept=".csv">
+          <label id="label_ubicacion" class="custom-file-label" for="inputGroupFile01">Choose file</label>
+        </div>
+      </div>
+      <button disabled class="btn btn-primary" type="button" id="boton_subir_ubicacion">Subir ubicaciones <span class="fa fa-upload"></span> </button>
+      {% if ubicacion is not none %}
+        <a href="/ubicacion/ubicaciones" class="btn btn-primary" type="button" id="boton_ver_ubicacion">Datos <span class="fa fa-database"></span> </a>
+        <br>
+        <br>
+        <div class="alert alert-primary d-block" role="alert" id="contenedor_resultado_ubicacion">
+          Actualizado: {{ubicacion.ULTIMA_SUBIDA.strftime('%d-%m-%Y %H:%M:%S')}}
+         </div>
+      {% else %}
+        <a href="/ubicacion/ubicaciones" class="btn btn-primary d-none" type="button" id="boton_ver_ubicacion">Datos <span class="fa fa-database"></span> </a>
+        <br>
+        <br>
+        <div class="alert alert-primary d-none" role="alert" id="contenedor_resultado_ubicacion"></div>
+      {% endif %}
+    </div>
+  </div>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+</div>
+
+<script type="module" src="{{ url_for('static', filename='js/config_maestros.js')}}"></script>
+
+{% endblock %}

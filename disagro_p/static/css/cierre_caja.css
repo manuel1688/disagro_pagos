@@ -1,0 +1,32 @@
+.contenedor_totales {
+    background-color:  #eaeded;
+    padding-top: 15px;
+    padding-bottom: 10px;
+    border-bottom-width: 20px;
+    border-radius: 2px;
+}
+
+.fa-money-bill-wave {
+    color: #229954;
+}
+
+.fa-money-check{
+    color: #546E7A;
+}
+
+.fa-cc-visa{
+    color:#1565C0;
+}
+
+.fa-cc-mastercard{
+    color:#D32F2F
+}
+
+.fa-cc-amex{
+    color:#2196F3;
+}
+
+.fa-credit-card {
+    color: #28B463;
+}
+

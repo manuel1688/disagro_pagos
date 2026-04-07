@@ -1,0 +1,622 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }} 
+    <title>Configuración de maestros</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
+    <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+{% endblock %} 
+
+{% block content %}
+ 
+<br>
+ 
+{% if planificacion.ESTADO == 'EXISTENCIAS_CARGADAS' %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>Planificación pendiente,</strong> se cargaron las existencias el {% if planificacion.FECHA is not none %} {{planificacion.FECHA.strftime("%d-%m-%Y %H:%M:%S")}} {% endif %}.
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{% endif %}
+
+{% if planificacion.ESTADO == 'EN_INVENTARIO' %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>Acción no permitida,</strong> la planificación no se puede modificar ya que está en proceso.
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{% endif %}
+
+{% if cantidad_articulos_incompletos > 0 %}
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+  <strong>⚠️ Atención:</strong> Hay <strong id="contador-incompletos">{{ cantidad_articulos_incompletos }}</strong> artículo(s) con información incompleta que requieren actualización.
+  <button type="button" class="btn btn-sm btn-outline-primary ml-2" data-toggle="collapse" data-target="#collapseArticulosIncompletos" aria-expanded="false" aria-controls="collapseArticulosIncompletos">
+    Ver detalles
+  </button>
+  <button type="button" class="btn btn-sm btn-warning ml-2" id="btn-editar-articulos">
+    <i class="fas fa-edit"></i> Editar artículos
+  </button>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <div class="collapse mt-3" id="collapseArticulosIncompletos">
+    <div class="card card-body">
+      <p class="mb-2"><strong>Artículos incompletos:</strong></p>
+      <ul class="mb-0" id="lista-articulos-incompletos">
+        {% for articulo in lista_articulos_incompletos %}
+        <li><code>{{ articulo }}</code></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="container">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+    <h3 class="mb-0">Planificar toma física de inventario</h3>
+    {% if planificacion and planificacion.CORRELATIVO %}
+    <span class="badge badge-dark mt-2 mt-md-0 text-uppercase">Correlativo: {{ planificacion.CORRELATIVO }}</span>
+    <a href="{{ url_for('planificacion_bp.descargar_existencias', id_planificacion=id) }}" class="btn btn-success btn-sm mt-2 mt-md-0 ml-md-2">
+      <i class="fas fa-file-excel"></i> Existencias teóricas cargadas
+        </a>
+    {% endif %}
+  </div>
+  
+  <!-- Fecha de la planificación -->
+  {% if planificacion and planificacion.FECHA %}
+  <div class="alert alert-info mt-3 mb-3">
+    <i class="fas fa-calendar-alt"></i> <strong>Fecha de planificación:</strong> 
+    {{ planificacion.FECHA.strftime("%d/%m/%Y %H:%M:%S") }}
+  </div>
+  {% endif %}
+  
+  <br>
+  <input type="text" id="input_planificacion_id" class="form-control d-none" value="{{id}}">
+  <div class="form-group">
+    <label for="input_planificacion_nombre">Nombre de la planificación (opcional)</label>
+    <input type="text" id="input_planificacion_nombre" class="form-control" value="{% if planificacion and planificacion.NOMBRE %}{{ planificacion.NOMBRE }}{% endif %}" maxlength="255" placeholder="Ej: Inventario de Material de Empaque PQ">
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="input-group input-group-sm mb-2">
+        <div class="input-group-prepend">
+          <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">Categoría 1</span>
+        </div>
+        <input
+          aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+          id="input_categoria_1" type="text" value="" name="input_categoria_1" 
+          list="datalist_categorias_1" data-nombre="CATEGORIA_1" data-requerido="true"
+          data-limpiar="true"
+          class="form-control campo_codigo input_formulario" 
+          autocomplete="off">
+        <datalist id="datalist_categorias_1">
+          {% for categoria_1 in categorias_1 %}
+            <option data-codigo="{{categoria_1.CATEGORIA}}" data-descripcion="{{categoria_1.DESCRIPCION}}" value="{{categoria_1.CATEGORIA}}">{{categoria_1.DESCRIPCION}}</option>
+          {% endfor %}
+        </datalist>
+      </div> 
+      <div id="lista_check_categoria_1">
+        {% if categorias_1_tiene_opcion_todas %}
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input" type="checkbox" id="TODAS_1_CATEGORIA_1" checked="true">
+            <label class="custom-control-label" for="TODAS_1_CATEGORIA_1">TODAS</label>
+          </div>
+        {% else %}
+          {% for categoria_1_planificada in categorias_1_planificadas %}
+            <div class="custom-control custom-checkbox">
+              <input class="custom-control-input" type="checkbox" id="{{categoria_1_planificada.CATEGORIA}}" data-codigo="{{categoria_1_planificada.CATEGORIA}}" checked="true">
+              <label class="custom-control-label" for="{{categoria_1_planificada.CATEGORIA}}">{{categoria_1_planificada.DESCRIPCION}}</label>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="input-group input-group-sm mb-2">
+        <div class="input-group-prepend">
+          <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">Categoría 2</span>
+        </div>
+        <input
+          aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+          id="input_categoria_2" type="text" value="" name="input_categoria_2" 
+          list="datalist_categorias_2" data-nombre="CATEGORIA_2" data-requerido="true"
+          data-limpiar="true"
+          class="form-control campo_codigo input_formulario" 
+          autocomplete="off">
+        <datalist id="datalist_categorias_2">
+          {% for categoria_2 in categorias_2 %}
+            <option data-codigo="{{categoria_2.CATEGORIA}}" data-descripcion="{{categoria_2.DESCRIPCION}}" value="{{categoria_2.CATEGORIA}}">{{categoria_2.DESCRIPCION}}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+      <div id="lista_check_categoria_2">
+        {% if categorias_2_tiene_opcion_todas %}
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input" type="checkbox" id="TODAS_2_CATEGORIA_2" checked="true">
+            <label class="custom-control-label" for="TODAS_2_CATEGORIA_2">TODAS</label>
+          </div>
+        {% else %}
+          {% for categoria_2_planificada in categorias_2_planificadas %}
+            <div class="custom-control custom-checkbox">
+              <input class="custom-control-input" type="checkbox" id="{{categoria_2_planificada.CATEGORIA}}" data-codigo="{{categoria_2_planificada.CATEGORIA}}" checked="true">
+              <label class="custom-control-label" for="{{categoria_2_planificada.CATEGORIA}}">{{categoria_2_planificada.DESCRIPCION}}</label>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <br>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="input-group input-group-sm mb-2">
+        <div class="input-group-prepend">
+          <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">Ubicación</span>
+        </div>
+        <input
+          aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+          id="input_ubicacion" type="text" value="" name="input_ubicacion" 
+          list="datalist_ubicaciones" data-nombre="UBICACION" data-requerido="true"
+          data-limpiar="true"
+          class="form-control campo_codigo input_formulario" 
+          autocomplete="off">
+        <datalist id="datalist_ubicaciones">
+          {% for ubicacion in ubicaciones %}
+            <option data-codigo="{{ubicacion.UBICACION}}" data-descripcion="{{ubicacion.DESCRIPCION}}" value="{{ubicacion.UBICACION}}">{{ubicacion.DESCRIPCION}}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+      <div id="lista_check_ubicaciones" data-pais="{{ pais }}">
+        {% if ubicacion_tiene_opcion_todas %}
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input" type="checkbox" id="TODAS_UBICACION" data-codigo="TODAS" checked="true">
+            <label class="custom-control-label" for="TODAS_UBICACION">TODAS</label>
+          </div>
+        {% else %}
+          {% for ubicacion_planificada in ubicaciones_planificadas %}
+            <div class="custom-control custom-checkbox">
+              <input class="custom-control-input" type="checkbox" id="{{ubicacion_planificada.UBICACION}}_UBICACION" checked="true" data-codigo="{{ubicacion_planificada.UBICACION}}">
+              <label class="custom-control-label" for="{{ubicacion_planificada.UBICACION}}_UBICACION">{{ubicacion_planificada.DESCRIPCION}}</label>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="input-group input-group-sm mb-2"> 
+        <div class="input-group-prepend">
+          <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">Almacén</span>
+        </div>
+        <input
+          aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+          id="input_almacen" type="text" value="" name="input_almacen" 
+          list="datalist_almacenes" data-nombre="ALMACEN" data-requerido="true"
+          data-limpiar="true"
+          class="form-control campo_codigo input_formulario" 
+          autocomplete="off">
+        <datalist id="datalist_almacenes">
+          {% for almacen in almacenes %}
+            <option data-codigo="{{almacen.ALMACEN}}" data-descripcion="{{almacen.DESCRIPCION}}" value="{{almacen.ALMACEN}}" >{{almacen.DESCRIPCION}}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+      <div id="lista_check_almacenes" data-pais="{{ pais }}">
+        {% if almacen_tiene_opcion_todas %}
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input" type="checkbox" id="TODAS_ALMACEN" data-codigo="TODAS" checked="true">
+            <label class="custom-control-label" for="TODAS_ALMACEN">TODAS</label>
+          </div>
+        {% else %}
+          {% for almacen_planificado in almacenes_planificados %}
+            <div class="custom-control custom-checkbox">
+              <input class="custom-control-input" type="checkbox" id="{{almacen_planificado.ALMACEN}}_ALMACEN" checked="true" data-codigo="{{almacen_planificado.ALMACEN}}">
+              <label class="custom-control-label" for="{{almacen_planificado.ALMACEN}}_ALMACEN">{{almacen_planificado.DESCRIPCION}}</label>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<br>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 text-center">
+      <button {% if planificacion.ESTADO == 'EN_INVENTARIO' %} disabled {% endif %} id="boton_filtrar" type="button" class="btn btn-primary btn-sm">
+        <i class="fas fa-filter"></i> Filtrar
+      </button>
+    </div>
+  </div>
+</div>
+<hr>
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="input-group input-group-sm mb-2">
+        <div class="input-group-prepend">
+          <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">Artículos</span>
+        </div>
+        <input
+          aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+          id="input_articulo" type="text" value="" name="input_articulo" 
+          list="datalist_articulos" data-nombre="ARTICULO" data-requerido="true"
+          data-limpiar="true"
+          class="form-control campo_codigo input_formulario" 
+          autocomplete="off">
+        <datalist id="datalist_articulos">
+          {% for articulo in articulos_filtrados %}
+            <option data-codigo="{{articulo.CODIGO}}" data-descripcion="{{articulo.DESCRIPCION}}" value="{{articulo.CODIGO}}">{{articulo.DESCRIPCION}} | {{articulo.DESCRIPCION}}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+      <div id="lista_check_articulos">
+        {% for usuario in articulos_planificados %}
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input" type="checkbox" id="{{usuario.ARTICULO}}_ARTICULO" checked="true" data-codigo="{{usuario.ARTICULO}}">
+            <label class="custom-control-label" for="{{usuario.ARTICULO}}_ARTICULO">{{usuario.DESCRIPCION}}</label>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <br>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="input-group input-group-sm mb-2">
+        <div class="input-group-prepend">
+          <span class="input-group-text btn-info active font-weight-bold" id="inputGroup-sizing-default">Captadores</span>
+        </div>
+        <input
+          aria-label="Default" aria-describedby="inputGroup-sizing-default" 
+          id="input_usuario" type="text" value="" name="input_usuario" 
+          list="datalist_usuarios" data-nombre="USUARIO" data-requerido="true"
+          data-limpiar="true"
+          class="form-control campo_codigo input_formulario" 
+          autocomplete="off">
+        <datalist id="datalist_usuarios">
+          {% for usuario in usuarios %}
+            <option data-codigo="{{usuario.usuario}}" value="{{usuario.usuario}}" data-descripcion="{{usuario.nombre}}" >{{usuario.nombre}}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+      <div id="lista_check_usuarios">
+        {% if usuario_tiene_opcion_todas %}
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input" type="checkbox" id="TODAS_USUARIO" checked="true">
+            <label class="custom-control-label" for="TODAS_USUARIO">TODAS</label>
+          </div>
+        {% else %}
+          {% for usuario_planificado in usuarios_planificados %}
+            <div class="custom-control custom-checkbox">
+              <input class="custom-control-input" type="checkbox" id="{{usuario_planificado.usuario}}_USUARIO" checked="true">
+              <label class="custom-control-label" for="{{usuario_planificado.usuario}}_USUARIO">{{usuario_planificado.nombre}}</label>
+            </div>
+          {% endfor %}
+        {% endif %}
+        <!-- <div class="custom-control custom-checkbox"><input class="custom-control-input" type="checkbox" id="oritter_USUARIO" checked="true"><label class="custom-control-label" for="oritter_USUARIO">oritter</label></div> -->
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 text-center">
+      <button {% if planificacion.ESTADO == 'EN_INVENTARIO' %} disabled {% endif %} id="boton_planificar" type="button" class="btn btn-primary btn-sm">
+        <i class="fas fa-check"></i> Planificar
+      </button>
+    </div>
+  </div>
+</div>
+<br>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <table class="table table-striped table-bordered dt-responsive nowrap" id="grid_planificacion">
+        <thead>
+          <tr>
+            <th scope="col">Artículo</th>
+            <th scope="col">Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for articulo in articulos_filtrados %}
+            <tr>
+              <td>{{articulo.CODIGO}}</td>
+              <td>{{articulo.DESCRIPCION}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para editar artículos incompletos -->
+<div class="modal fade" id="modalEditarArticulos" tabindex="-1" role="dialog" aria-labelledby="modalEditarArticulosLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEditarArticulosLabel">
+          <i class="fas fa-edit"></i> Editar Artículos Incompletos
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="spinner-articulos" class="text-center" style="display: none;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Cargando...</span>
+          </div>
+        </div>
+        <div id="contenedor-tabla-articulos" style="display: none;">
+          <p class="text-muted">
+            <small>Complete la información de los artículos. Los campos marcados con * son obligatorios.</small>
+          </p>
+          <table class="table table-striped table-bordered dt-responsive nowrap" id="grid_articulos_incompletos" style="width:100%">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descripción *</th>
+                <th>Categoría 1 *</th>
+                <th>Categoría 2 *</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          <i class="fas fa-times"></i> Cerrar
+        </button>
+        <button type="button" class="btn btn-success" id="btn-guardar">
+          <i class="fas fa-save"></i> Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<script type="module" src="{{ url_for('static', filename='js/planificacion.js')}}"></script>
+
+<script>
+  // Variables globales para edición de artículos
+  let articulosIncompletos = [];
+  let categorias1 = [];
+  let categorias2 = [];
+  let tablaArticulos = null;
+  const idPlanificacion = {{ id }};
+
+  // Función para cargar artículos incompletos
+  function cargarArticulosIncompletos() {
+    $('#spinner-articulos').show();
+    $('#contenedor-tabla-articulos').hide();
+    
+    fetch('/planificacion/articulos/incompletos/' + idPlanificacion, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (!data.error) {
+        articulosIncompletos = data.articulos;
+        categorias1 = data.categorias_1;
+        categorias2 = data.categorias_2;
+        actualizarContadorIncompletos();
+        
+        renderizarTablaArticulos();
+        $('#spinner-articulos').hide();
+        $('#contenedor-tabla-articulos').show();
+      } else {
+        mostrarError('Error al cargar artículos: ' + data.mensaje);
+        $('#modalEditarArticulos').modal('hide');
+      }
+    })
+    .catch(error => {
+      mostrarError('Error de conexión al cargar artículos');
+      $('#modalEditarArticulos').modal('hide');
+    });
+  }
+
+  // Función para renderizar la tabla de artículos
+  function renderizarTablaArticulos() {
+    if (tablaArticulos) {
+      tablaArticulos.destroy();
+    }
+
+    const tbody = $('#grid_articulos_incompletos tbody');
+    tbody.empty();
+
+    articulosIncompletos.forEach(function(articulo, index) {
+      const opciones1 = categorias1.map(cat => 
+        `<option value="${cat.codigo}" ${cat.codigo === articulo.categoria_1 ? 'selected' : ''}>${cat.codigo} - ${cat.descripcion}</option>`
+      ).join('');
+      
+      const opciones2 = categorias2.map(cat => 
+        `<option value="${cat.codigo}" ${cat.codigo === articulo.categoria_2 ? 'selected' : ''}>${cat.codigo} - ${cat.descripcion}</option>`
+      ).join('');
+
+      const fila = `
+        <tr data-index="${index}">
+          <td>${articulo.articulo}</td>
+          <td>
+            <input type="text" class="form-control form-control-sm input-descripcion" 
+                   value="${articulo.descripcion}" 
+                   data-articulo="${articulo.articulo}"
+                   placeholder="Ingrese descripción">
+          </td>
+          <td>
+            <select class="form-control form-control-sm select-categoria-1" data-articulo="${articulo.articulo}">
+              ${opciones1}
+            </select>
+          </td>
+          <td>
+            <select class="form-control form-control-sm select-categoria-2" data-articulo="${articulo.articulo}">
+              ${opciones2}
+            </select>
+          </td>
+        </tr>
+      `;
+      tbody.append(fila);
+    });
+
+    // Inicializar DataTable
+    tablaArticulos = $('#grid_articulos_incompletos').DataTable({
+      paging: true,
+      responsive: true,
+      searching: true,
+      ordering: true,
+      language: idioma,
+      order: [[0, 'asc']],
+      pageLength: 10
+    });
+  }
+
+  // Función para guardar los artículos
+  $('#btn-guardar').on('click', function() {
+    if (articulosIncompletos.length === 0) {
+      mostrarInfo('No hay artículos pendientes por guardar');
+      return;
+    }
+
+    const articulosPendientes = [];
+    const articulosConErrores = [];
+
+    articulosIncompletos.forEach(function(articulo) {
+      const fila = $(`tr:has([data-articulo="${articulo.articulo}"])`);
+      const descripcion = fila.find('.input-descripcion').val().trim();
+      const categoria1 = fila.find('.select-categoria-1').val();
+      const categoria2 = fila.find('.select-categoria-2').val();
+
+      const descripcionOriginal = (articulo.descripcion || '').trim();
+      const filaTieneCambios = descripcion !== descripcionOriginal ||
+                               categoria1 !== articulo.categoria_1 ||
+                               categoria2 !== articulo.categoria_2;
+
+      if (!filaTieneCambios) {
+        return;
+      }
+
+      const datosValidos = descripcion &&
+                           descripcion !== 'Sin descripción' &&
+                           categoria1 && categoria2 &&
+                           !categoria1.startsWith('ND') &&
+                           !categoria2.startsWith('ND');
+
+      if (!datosValidos) {
+        articulosConErrores.push(articulo.articulo);
+        return;
+      }
+
+      articulosPendientes.push({
+        articulo: articulo.articulo,
+        descripcion: descripcion,
+        categoria_1: categoria1,
+        categoria_2: categoria2
+      });
+    });
+
+    if (articulosConErrores.length > 0) {
+      mostrarError(`Hay ${articulosConErrores.length} artículo(s) con datos incompletos. Por favor complete todos los campos antes de guardar.`);
+      return;
+    }
+
+    if (articulosPendientes.length === 0) {
+      mostrarInfo('No hay cambios listos para guardar');
+      return;
+    }
+
+    if (!confirm(`¿Está seguro de guardar los cambios?`)) {
+      return;
+    }
+
+    const promesas = articulosPendientes.map(function(item) {
+      return fetch('/planificacion/articulos/actualizar', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(item)
+      }).then(response => response.json());
+    });
+
+    $('#btn-guardar').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Guardando...');
+
+    Promise.all(promesas)
+      .then(function() {
+        mostrarExito('Los artículos se actualizaron correctamente');
+        const articulosActualizados = new Set(articulosPendientes.map(item => item.articulo));
+        articulosIncompletos = articulosIncompletos.filter(function(articulo) {
+          return !articulosActualizados.has(articulo.articulo);
+        });
+        renderizarTablaArticulos();
+        actualizarContadorIncompletos();
+        if (articulosIncompletos.length === 0) {
+          $('#modalEditarArticulos').modal('hide');
+        }
+      })
+      .catch(function() {
+        mostrarError('Algunos artículos no pudieron actualizarse');
+      })
+      .finally(function() {
+        $('#btn-guardar').prop('disabled', false).html('<i class="fas fa-save"></i> Guardar');
+      });
+  });
+
+  // Función para actualizar el contador de artículos incompletos
+  function actualizarContadorIncompletos() {
+    const cantidad = articulosIncompletos.length;
+    $('#contador-incompletos').text(cantidad);
+    
+    // Actualizar lista
+    const lista = $('#lista-articulos-incompletos');
+    lista.empty();
+    articulosIncompletos.forEach(art => {
+      lista.append(`<li><code>${art.articulo}</code></li>`);
+    });
+
+    // Ocultar alerta si no hay más incompletos
+    if (cantidad === 0) {
+      $('.alert-info').fadeOut();
+    }
+  }
+
+  // Event handler para abrir modal
+  $('#btn-editar-articulos').on('click', function() {
+    $('#modalEditarArticulos').modal('show');
+    cargarArticulosIncompletos();
+  });
+
+  // Funciones auxiliares para mensajes
+  function mostrarExito(mensaje) {
+    alert('✓ ' + mensaje);
+  }
+
+  function mostrarError(mensaje) {
+    alert('✗ ' + mensaje);
+  }
+
+  function mostrarInfo(mensaje) {
+    alert('ℹ ' + mensaje);
+  }
+</script>
+
+{% endblock %}

@@ -1,0 +1,329 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/diferencias.css')}}">
+    {% block title %}
+    <title>Reporte</title>
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+<br>
+<input type="hidden" id="id_planificacion" name="id_planificacion" value="{{ id_planificacion }}">
+{% set catalog = report_catalog | default([]) %}
+{% set active_candidates = catalog | selectattr('key', 'equalto', selected_report) | list %}
+{% if active_candidates %}
+   {% set active_option = active_candidates[0] %}
+{% else %}
+   {% set active_option = None %}
+{% endif %}
+{% set current_key = selected_report | default('') %}
+{% set observacion_cierre = observacion_cierre | default(None) %}
+{% set usuario_aprobacion = usuario_aprobacion | default(None) %}
+{% set fecha_aprobacion = fecha_aprobacion | default(None) %}
+{% set planificacion_nombre = planificacion_nombre | default('') %}
+{% set planificacion_estado = planificacion_estado | default('') %}
+{% set planificacion_aprobada = planificacion_aprobada | default(False) %}
+{% set has_observacion = observacion_cierre or usuario_aprobacion or fecha_aprobacion %}
+
+<div class="container report-shell">
+   <div class="report-toolbar no-print">
+      <div class="report-toolbar__left">
+         {% if costo %}
+         <button id="boton_subir" class="btn btn-outline-dark btn-sm me-2" type="button" onclick="window.history.back();">
+            <i class="fa fa-arrow-left" aria-hidden="true"></i>
+         </button>
+         {% endif %}
+         <div class="report-toolbar__badge">
+            <span class="report-toolbar__eyebrow">Reporte activo</span>
+            <span class="report-toolbar__title">
+               {{ active_option.label if active_option else 'Selecciona un reporte' }}
+               {% if planificacion_nombre %}
+               <span class="report-toolbar__plan-name">· {{ planificacion_nombre }}</span>
+               {% endif %}
+            </span>
+            {% if planificacion_correlativo %}
+            <small class="report-toolbar__meta text-muted">Correlativo: {{ planificacion_correlativo }}</small>
+            {% endif %}
+         </div>
+      </div>
+      <div class="report-toolbar__right">
+         {% if current_key == 'diferencias' and not costo %}
+         <a class="btn btn-outline-dark btn-sm" href="{{ url_for('reporte_bp.diferencias_xls', id_planificacion=id_planificacion) }}">
+            <i class="fa fa-download" aria-hidden="true"></i> Descargar diferencias (XLS)
+         </a>
+         {% elif current_key == 'consolidado' %}
+         <a class="btn btn-outline-dark btn-sm" href="{{ url_for('reporte_bp.consolidado_xls', id_planificacion=id_planificacion) }}">
+            <i class="fa fa-download" aria-hidden="true"></i> Descargar consolidado (XLS)
+         </a>
+         {% endif %}
+         {% set btn_observacion_clases = 'btn btn-outline-info btn-sm' %}
+         <button id="btn-acta-aprobacion"
+                 class="{{ btn_observacion_clases }}{% if not usuario_aprobacion %} d-none{% endif %}"
+                 type="button"
+                 data-observation-open
+                 data-has-observation="{{ 1 if has_observacion else 0 }}"
+                 data-planificacion-nombre="{{ planificacion_nombre or '' }}"
+                 data-planificacion-estado="{{ planificacion_estado or '' }}"
+                 data-planificacion-correlativo="{{ planificacion_correlativo or '' }}">
+            <i class="fa fa-file-signature" aria-hidden="true"></i> Ver acta de aprobación
+         </button>
+         <button class="btn btn-primary btn-sm" type="button" data-report-selector="open">
+            <i class="fa fa-th-large" aria-hidden="true"></i> Cambiar reporte
+         </button>
+         <button id="boton_aprobar"
+                 class="btn btn-outline-success btn-sm{% if not (seccion_de_planificacion and not costo and validar_area('NIVEL_1', g.user.usuario) and not planificacion_aprobada) %} d-none{% endif %}"
+                 type="button"
+                 data-approval-open>
+            Aprobar <i class="fa fa-check" aria-hidden="true"></i>
+         </button>
+      </div>
+   </div>
+
+   <div id="reportSelector" class="report-selector no-print" data-state="closed" data-active-key="{{ current_key }}">
+      <div class="report-selector__backdrop" data-report-selector="close"></div>
+      <div class="report-selector__panel">
+         <div class="report-selector__header">
+            <h5 class="mb-0">Seleccionar reporte</h5>
+            <button type="button" class="btn btn-outline-secondary btn-sm" aria-label="Cerrar" data-report-selector="close">
+               <i class="fa fa-times" aria-hidden="true"></i>
+            </button>
+         </div>
+         <div class="report-selector__search">
+            <div class="input-group input-group-sm">
+               <span class="input-group-text"><i class="fa fa-search" aria-hidden="true"></i></span>
+               <input type="search" id="reportSearchInput" class="form-control" placeholder="Buscar reporte">
+            </div>
+         </div>
+         <ul class="report-selector__list" id="reportSelectorList">
+            {% for option in catalog %}
+               {% if not option.required_role or validar_area(option.required_role, g.user.usuario) %}
+               <li class="report-selector__item{% if option.key == current_key %} is-active{% endif %}" data-key="{{ option.key }}" data-type="{{ option.type }}" data-href="{{ option.url }}">
+                  <div class="report-selector__icon">
+                     <i class="fa {{ option.icon }}" aria-hidden="true"></i>
+                  </div>
+                  <div class="report-selector__content">
+                     <div class="report-selector__title">{{ option.label }}</div>
+                     <div class="report-selector__description">{{ option.description }}</div>
+                  </div>
+                  <div class="report-selector__cta">
+                     {% if option.key == current_key %}
+                     <span class="report-selector__badge-active">Actual</span>
+                     {% else %}
+                     <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                     {% endif %}
+                  </div>
+               </li>
+               {% endif %}
+            {% endfor %}
+         </ul>
+         {% if not catalog %}
+         <div class="alert alert-warning mt-2 mb-0" role="alert">
+            No se encontraron reportes configurados.
+         </div>
+         {% endif %}
+      </div>
+   </div>
+
+   <div class="report-shell__content">
+      {% if current_key == 'consolidado' %}
+         {% include 'reporte/partials/consolidado_table.html' %}
+      {% elif current_key in ['diferencias', 'costos', 'nuevos', 'archivadas', 'comentarios'] %}
+         {% include 'reporte/partials/diferencias_table.html' %}
+      {% elif current_key == 'estados' %}
+         {% include 'reporte/partials/reporte_estados.html' %}
+      {% elif current_key == 'galeria' %}
+         {% include 'reporte/partials/galeria_estados.html' %}
+      {% else %}
+         <div class="alert alert-secondary mt-4" role="alert">
+            Selecciona un reporte para comenzar.
+         </div>
+      {% endif %}
+   </div>
+</div>
+
+<div id="approvalModal" class="approval-modal" data-state="closed">
+   <div class="approval-modal__backdrop" data-approval-action="close"></div>
+   <div class="approval-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="approvalModalTitle">
+      <div class="approval-modal__header">
+         <div class="approval-modal__icon">
+            <i class="fa fa-shield-alt" aria-hidden="true"></i>
+         </div>
+         <div>
+            <h5 id="approvalModalTitle" class="mb-1">Confirmar cierre del reporte</h5>
+            <p class="mb-0 text-muted">Esta acción moverá la planificación al histórico y bloqueará nuevas captaciones.</p>
+         </div>
+         <button type="button" class="btn btn-outline-secondary btn-sm" data-approval-action="close" aria-label="Cerrar">
+            <i class="fa fa-times" aria-hidden="true"></i>
+         </button>
+      </div>
+      <div class="approval-modal__body">
+         <div class="approval-modal__summary">
+            <p class="fw-semibold mb-1">Resumen de aprobación</p>
+            <ul class="approval-modal__summary-list">
+               <li>Se generará el acta de cierre para la planificación <strong>#{{ id_planificacion }}</strong>.</li>
+               <li>Los reportes dejarán de aceptar modificaciones y quedarán disponibles solo en histórico.</li>
+               <li>El responsable quedará registrado con su firma digital y sello de tiempo.</li>
+            </ul>
+         </div>
+         <form id="approvalForm" class="approval-modal__form">
+            <div class="mb-3">
+               <label for="approvalObservaciones" class="form-label">Comentarios finales (opcional)</label>
+               <textarea id="approvalObservaciones" class="form-control" rows="2" placeholder="Notas relevantes del cierre"></textarea>
+            </div>
+            <div class="mb-3">
+               <label for="approvalPassword" class="form-label">Firma digital</label>
+               <input id="approvalPassword" type="password" class="form-control" placeholder="Ingresa tu contraseña de acceso" autocomplete="current-password" required>
+               <div class="form-text">Tu firma digital valida que eres el responsable de aprobar este cierre.</div>
+            </div>
+            <div class="approval-modal__feedback text-danger" data-approval-feedback hidden></div>
+            <div class="approval-modal__actions">
+               <button type="button" class="btn btn-outline-secondary" data-approval-action="close">Cancelar</button>
+               <button type="submit" class="btn btn-success"><span>Firmar y aprobar</span></button>
+            </div>
+         </form>
+      </div>
+   </div>
+</div>
+
+<div id="observationModal" class="approval-modal preview-shell" data-state="closed">
+    <div class="approval-modal__backdrop" data-observation-action="close"></div>
+    <div class="approval-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="observationModalTitle">
+       <div class="approval-modal__header">
+          <div class="approval-modal__icon">
+            <i class="fa fa-file-signature" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h5 id="observationModalTitle" class="mb-1">Acta de aprobación</h5>
+            <p class="mb-0 text-muted" data-observation-plan>Planificación: {{ planificacion_nombre or '-' }}</p>
+            <p class="mb-0 text-muted" data-observation-status>Estado del reporte: {{ planificacion_estado or '-' }}</p>
+          </div>
+         <button type="button" class="btn btn-outline-secondary btn-sm" data-observation-action="close" aria-label="Cerrar">
+            <i class="fa fa-times" aria-hidden="true"></i>
+         </button>
+      </div>
+      <div class="approval-modal__body">
+         <div class="observation-empty alert alert-secondary" role="alert" data-observation-empty>
+            No se registró acta de aprobación para este cierre.
+         </div>
+         <div class="observation-details" data-observation-details hidden>
+            <p class="observation-meta"><strong>Nombre de la planificación:</strong> <span data-observation-plan-name>{{ planificacion_nombre or '-' }}</span></p>
+            <p class="observation-meta"><strong>Estado del reporte:</strong> <span data-observation-status-value>{{ planificacion_estado or '-' }}</span></p>
+            <p class="observation-meta"><strong>Responsable:</strong> <span data-observation-user>{{ usuario_aprobacion or '-' }}</span></p>
+            <p class="observation-meta"><strong>Fecha de aprobación:</strong> <span data-observation-date>{% if fecha_aprobacion %}{{ fecha_aprobacion.strftime("%d/%m/%Y %H:%M") }}{% else %}-{% endif %}</span></p>
+            <p class="observation-meta"><strong>Aprobado digitalmente por:</strong> <span data-observation-digital>{{ usuario_aprobacion or '-' }}</span></p>
+            <p class="observation-meta"><strong>Correlativo:</strong> <span data-observation-correlativo>{{ planificacion_correlativo or '-' }}</span></p>
+            <div class="observation-text-wrapper">
+               <p class="fw-semibold mb-1">Detalle del acta</p>
+               <p class="observation-text" data-observation-text>{{ observacion_cierre or 'Sin detalle registrado en el acta.' }}</p>
+            </div>
+            <div class="signature-section signature-section--modal">
+               <h6 class="signature-section__title">Firmas registradas</h6>
+               <p class="signature-section__note">Confirma la cadena de custodia asociada a esta acta.</p>
+               <div class="signature-section__grid">
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Jefe de Inventario</span>
+                  </div>
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Supervisor de Almacén</span>
+                  </div>
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Gerente Financiero</span>
+                  </div>
+                  <div class="signature-slot">
+                     <span class="signature-line"></span>
+                     <span class="signature-role">Auditor Interno</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="approval-modal__actions">
+            <button type="button" class="btn btn-outline-secondary" data-observation-action="close">Cerrar</button>
+            <button type="button" class="btn btn-outline-primary btn-sm" data-observation-action="print" data-observation-print disabled>
+               <i class="fa fa-print"></i> Imprimir acta
+            </button>
+            <button type="button" class="btn btn-primary" data-observation-action="print-full" data-observation-print-full disabled>
+               <i class="fa fa-file-pdf"></i> Imprimir acta completa
+            </button>
+         </div>
+      </div>
+   </div>
+</div>
+
+<script type="module" src="{{ url_for('static', filename='js/diferencias.js')}}"></script>
+<script>
+(function() {
+   const selector = document.getElementById('reportSelector');
+   if (!selector) {
+      return;
+   }
+
+   const openButtons = document.querySelectorAll('[data-report-selector="open"]');
+   const closeButtons = document.querySelectorAll('[data-report-selector="close"]');
+   const searchInput = document.getElementById('reportSearchInput');
+   const items = Array.from(selector.querySelectorAll('.report-selector__item'));
+   const activeKey = selector.getAttribute('data-active-key') || '';
+
+   const setState = (state) => {
+      selector.setAttribute('data-state', state);
+      document.body.classList.toggle('report-selector-open', state === 'open');
+      
+      // Si se está abriendo el selector, enfocar el campo de búsqueda
+      if (state === 'open' && searchInput) {
+         setTimeout(() => {
+            searchInput.focus();
+            searchInput.select();
+         }, 100);
+      }
+   };
+
+   openButtons.forEach(btn => {
+      btn.addEventListener('click', () => setState('open'));
+   });
+
+   closeButtons.forEach(btn => {
+      btn.addEventListener('click', () => setState('closed'));
+   });
+
+   if (searchInput) {
+      searchInput.addEventListener('input', (event) => {
+         const term = event.target.value.trim().toLowerCase();
+         items.forEach(item => {
+            const text = item.innerText.toLowerCase();
+            const matches = !term || text.includes(term);
+            item.style.display = matches ? '' : 'none';
+         });
+      });
+   }
+
+   items.forEach(item => {
+      item.addEventListener('click', () => {
+         const type = item.getAttribute('data-type');
+         const url = item.getAttribute('data-href');
+         const key = item.getAttribute('data-key');
+
+         if (!url) {
+            return;
+         }
+
+         if (key === activeKey && type !== 'download') {
+            setState('closed');
+            return;
+         }
+
+         if (type === 'download') {
+            window.open(url, '_blank');
+            setState('closed');
+            return;
+         }
+
+         window.location.href = url;
+      });
+   });
+})();
+</script>
+{% endblock %}

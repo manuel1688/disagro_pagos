@@ -1,0 +1,91 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <title>Configuración de maestros</title>
+{% endblock %} 
+
+{% block content %}
+<br>
+<div class="container">
+  <h4>Carga de existencias</h3>
+  <p>Previo al la planificación se debe cargar las existencias.</p>
+  <br>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="form-group">
+        <label for="input_planificacion_nombre">Nombre de la planificación <small class="text-muted">(requerido)</small></label>
+        <input type="text" id="input_planificacion_nombre" name="nombre" class="form-control" maxlength="255" placeholder="Ej: Inventario de Material de Empaque PQ" required>
+      </div>
+
+      <div class="form-group">
+        <label for="input_correlativo_base">
+          Identificador de correlativo
+          <span class="text-muted" data-toggle="tooltip" title="Ingresa un código corto sin espacios. El sistema generará el correlativo completo, por ejemplo: CI-{{ pais or 'PAIS' }}-PQ-{{ anio_actual }}-001.">
+            <i class="fa fa-info-circle"></i>
+          </span>
+        </label>
+        <input
+          type="text"
+          id="input_correlativo_base"
+          name="correlativo_base"
+          class="form-control"
+          maxlength="60"
+          pattern="[A-Za-z0-9\-]+"
+          placeholder="Ej: PQ"
+          required
+          oninput="this.value = this.value.toUpperCase().replace(/\s+/g, '-');"
+        >
+        <small class="form-text text-muted">Solo letras, números y guiones. El valor se convertirá automáticamente a mayúsculas.</small>
+      </div>
+
+      {% if pais == 'GT' %}
+      <div class="form-group">
+        <label for="select_tipo_correlativo">Tipo de toma física</label>
+        <select id="select_tipo_correlativo" name="tipo_correlativo" class="form-control">
+          <option value="DELEGADOS" selected>Delegados (prefijo CI-)</option>
+          <option value="PLANTA">Planta (prefijo CIP-)</option>
+        </select>
+      </div>
+      {% endif %}
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="btn btn-primary">Existencias</span>
+        </div>
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="input_existencias" aria-describedby="area_input_existencias" accept=".csv">
+          <label id="label_existencias" class="custom-file-label" for="inputGroupFile01">Choose file</label>
+        </div>
+      </div>
+      <button disabled class="btn btn-primary" type="button" id="boton_input_existencias">Subir existencias <span class="fa fa-upload"></span> </button>
+      {% if existencias is not none %}
+        <a href="/existencia/existencias" class="btn btn-primary" type="button" id="boton_ver_existencias">Datos <span class="fa fa-database"></span> </a>
+        <button class="btn btn-danger" type="button" id="boton_limpiar_existencias">Limpiar existencias <span class="fa fa-trash"></span> </button>
+        <br>
+        <br>
+        <div class="alert alert-primary d-block" role="alert" id="contenedor_resultado_existencias">
+          Actualizado: {{existencias.ULTIMA_SUBIDA.strftime('%d-%m-%Y %H:%M:%S')}}
+         </div>
+      {% else %}
+        <a href="/existencia/existencias" class="btn btn-primary d-none" type="button" id="boton_ver_existencias">Datos <span class="fa fa-database"></span> </a>
+        <button disabled class="btn btn-danger d-none" type="button" id="boton_limpiar_existencias">Limpiar existencias <span class="fa fa-trash"></span> </button>
+        <br>
+        <br>
+        <div class="alert alert-primary d-none" role="alert" id="contenedor_resultado_existencias"></div>
+      {% endif %}
+    </div>
+  </div>
+  <br>
+  <br>
+  <br>
+
+</div>
+
+<script type="module" src="{{ url_for('static', filename='js/existencias_planificacion.js')}}"></script>
+
+<script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+
+{% endblock %}

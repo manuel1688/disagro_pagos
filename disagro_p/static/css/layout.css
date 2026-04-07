@@ -1,0 +1,25 @@
+
+.jumbotron {
+    background-color: #0355ad6e !important;
+    border-radius: .3rem !important;
+    margin-bottom: 0rem !important;
+    padding: 1rem 1rem !important;
+}
+
+/* .btn {
+  background-color: #0355ad6e !important;
+  font-weight: bold !important;
+  color:black !important;
+} */
+
+.btn-lg {
+    padding: .75rem 1.25rem !important;
+    font-weight: 700 !important;
+}
+
+.btn-secondary, .btn-secondary:hover, .btn-secondary:focus {
+    color: #333 !important;
+    text-shadow: none !important;
+    background-color: #fff !important;
+    border: .05rem solid #fff !important;
+}

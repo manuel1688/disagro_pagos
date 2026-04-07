@@ -1,0 +1,103 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
+{% endblock %}
+
+{% block content %}
+<br>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+    {% if category == "error" %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% else %}
+      <div class="alert alert-info alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endif %}
+  {% endfor %}
+  {% endif %}
+{% endwith %}
+<div class="container-fluid">
+  <a id="enlace_buscador_factura" href="/admin/maestros" type="button" class="btn btn-outline-dark btn-sm">
+    <i class="fas fa-arrow-left"></i> 
+  </a>
+</div>
+<br>
+<div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <span> Actualizado: {{ultima_subida.ULTIMA_SUBIDA.strftime('%d-%m-%Y %H:%M:%S')}}</span>
+        <br>
+        <br>
+        <a id="boton_subir" class="btn btn-light btn-sm" href="/almacen/excel" role="button" download>
+          Descargar <i class="fa fa-download" aria-hidden="true"></i>
+        </a>
+        <br>
+        <br>
+        <div id="contenedor" class="d-none">
+          <table class="table table-striped table-bordered dt-responsive nowrap" id="grid_almacenes">
+            <thead>
+              <tr>
+                <th scope="col">ALMACEN</th>
+                <th scope="col">DESCRIPCION</th>
+                <th scope="col">ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for almacen in almacenes %}
+                {% if almacen.DESCRIPCION != "TODAS" %}
+                  <tr>
+                    <td class="centrado_vertical">{{ almacen.ALMACEN }}</td>
+                    <td class="centrado_vertical">{{ almacen.DESCRIPCION }}</td>
+                    <td class="centrado_vertical">
+                      <form action="/almacen/eliminar/{{ almacen.ALMACEN }}" method="POST" onsubmit="return confirm('¿Está seguro de eliminar esta almacén?');">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br>
+  <br>
+<script src="{{ url_for('static', filename='js/common.js')}}"></script>
+<script>
+
+  $( function(){
+
+    idioma["emptyTable"] = "No hay resultados.";
+    $("#cargando").removeClass('d-none');
+    grid_de_venta = $('#grid_almacenes').DataTable({
+      "paging": true,
+      "responsive": true,
+      "language": idioma,
+      "searching": true,
+      "drawCallback": function(settings) {
+        $("#contenedor").removeClass('d-none');
+        $("#cargando").addClass('d-none');
+      },
+      'select': 'multi',
+      'order': [[1, 'asc']]
+    });    
+  });
+
+</script>
+<!-- <script type="module" src="{{ url_for('static', filename='js/facturas.js')}}"></script> -->
+{% endblock %}

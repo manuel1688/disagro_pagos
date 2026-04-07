@@ -1,0 +1,43 @@
+{% extends "index.html" %}
+
+{% block head %}
+  {{ super() }}
+  <!-- Asegúrate de incluir Bootstrap 4 -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h4 class="mb-4">Informe detallado por estados</h4>
+  <div class="container">
+    <div class="row no-print">
+       <div class="col-md-2 text-end">
+            <button id="boton_subir" class="btn btn-outline-dark btn-sm" onclick="window.history.back();">
+                <i class="fas fa-arrow-left"></i> 
+            </button>
+       </div>
+    </div>
+    <br>
+ </div>
+  <div class="row">
+    {% for item in resultados %}
+      <div class="col-12">
+        <div class="card h-100">
+          <img src="{{ item.IMAGEN }}" class="card-img-top img-fluid img-thumbnail w-100 h-auto" alt="{{ item.ARTICULO }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ item.ARTICULO }}</h5>
+            <p class="card-text">{{ item.DESCRIPCION }}</p>
+          </div>
+          <div class="card-footer">
+            <small class="text-muted">
+              Ubicación | Almacén: {{ item.UBICACION }} - {{ item.ALMACEN }} <br>
+              Cantidad: {{ item.CANTIDAD }} <br>
+              Estado: {{ item.ESTADO }}
+            </small>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

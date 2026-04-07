@@ -1,0 +1,92 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
+    <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<br>
+<div class="container-fluid">
+  <a id="enlace_buscador_factura" href="{{ url_for('historial_bp.filtro', start_date=filtro_inicio, end_date=filtro_fin, correlativo=filtro_correlativo, nombre_planificacion=filtro_nombre) }}" type="button" class="btn btn-outline-dark btn-sm">
+    <i class="fas fa-arrow-left"></i> 
+  </a>
+</div>
+{% if filtro_inicio or filtro_fin or filtro_correlativo or filtro_nombre %}
+<div class="container-fluid mt-3">
+  <div class="alert alert-info py-2 px-3">
+    <strong>Filtro aplicado:</strong>
+    fechas de archivado
+    {% if filtro_inicio %}desde <span class="font-weight-bold">{{ filtro_inicio }}</span>{% endif %}
+    {% if filtro_inicio and filtro_fin %} y {% endif %}
+    {% if filtro_fin %}hasta <span class="font-weight-bold">{{ filtro_fin }}</span>{% endif %}.
+    {% if filtro_correlativo %}<br>Correlativo: <span class="font-weight-bold">{{ filtro_correlativo }}</span>{% endif %}
+    {% if filtro_nombre %}<br>Nombre: <span class="font-weight-bold">{{ filtro_nombre }}</span>{% endif %}
+  </div>
+</div>
+{% endif %}
+<br>
+<div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <br>
+        <div id="contenedor" class="d-none">
+          <table class="table table-striped table-bordered dt-responsive nowrap" id="grid_historial">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Correlativo</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Creada el</th>
+                <th scope="col">Archivada el</th>
+                <th scope="col">REPORTES</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for historial in historiales %}
+                <tr>
+                  <td class="centrado_vertical">{{ historial.ID }}</td>
+                  <td class="centrado_vertical">{{ historial.CORRELATIVO or '-' }}</td>
+                  <td class="centrado_vertical">{{ historial.NOMBRE or '-' }}</td>
+                  <td class="centrado_vertical">
+                    {{ historial.FECHA.strftime('%d/%m/%Y %H:%M:%S') if historial.FECHA else '-' }}
+                  </td>
+                  <td class="centrado_vertical">
+                    {{ historial.FECHA_APROBACION.strftime('%d/%m/%Y %H:%M:%S') if historial.FECHA_APROBACION else 'Sin aprobación' }}
+                  </td>
+                  <td class="centrado_vertical"><a disabled href="/reporte/diferencias/archivadas/{{historial.ID }}">Mostrar</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+<script src="{{ url_for('static', filename='js/common.js')}}"></script>
+<script>
+
+  $( function(){
+
+    idioma["emptyTable"] = "No hay resultados.";
+    $("#cargando").removeClass('d-none');
+    grid_de_venta = $('#grid_historial').DataTable({
+      "paging": true,
+      "responsive": true,
+      "language": idioma,
+      "searching": true,
+      "drawCallback": function( settings ){
+        $("#contenedor").removeClass('d-none');
+        $("#cargando").addClass('d-none');
+      },
+      'select': 'multi',
+      'order': [[4, 'desc']]
+    });    
+  });
+
+</script>
+<!-- <script type="module" src="{{ url_for('static', filename='js/facturas.js')}}"></script> -->
+{% endblock %}

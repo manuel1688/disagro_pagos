@@ -1,0 +1,108 @@
+{% extends "index.html" %}
+{% block head %}
+    {{ super() }}
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/reporte.css')}}"> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
+   <style>
+      .profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile img {
+            max-width: 100px; /* Ajusta el tamaño de la imagen */
+            max-height: 100px; /* Ajusta la altura de la imagen */
+            margin-right: 20px;
+        }
+        .profile-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .profile-details div {
+            margin-bottom: 5px;
+        }
+
+        @media print {
+            .card {
+                display: flex;
+                flex-direction: row;
+                align-items: flex-start;
+                width: 100%;
+            }
+            .card-img-top {
+                max-width: 100px;
+                max-height: 100px;
+                margin-right: 20px;
+            }
+            .card-body {
+                display: flex;
+                flex-direction: column;
+                width: calc(100% - 120px); /* Ajusta el ancho del contenido */
+            }
+        }
+   </style>
+    
+    {% block title %}
+    <title>Pedidos</title>
+    {% endblock %}
+{% endblock %}
+
+{% block content %}
+
+   <br>
+   <div class="container">
+      <div class="row">
+
+         <br>
+         
+         <button id="boton_imprimir" class="btn btn-light btn-sm" role="button">
+            Imprimir <i class="fa fa-print" aria-hidden="true"></i>
+         </button>
+       
+
+         <div class="col-md-12 text-end">
+            <a href="/historial/estados"> << Reporte de estados</a>
+         </div>
+      </div>
+   </div>
+   <div class="container" id="reporte_complemento">
+      <h3>Captaciones con Estado</h3>
+      <div class="row">
+         {% for captacion in captaciones %}
+         <div class="col-md-4">
+               <div class="card" style="width: 18rem;">
+                  {% if captacion.IMAGEN %}
+                  <img class="card-img-top" src="data:image/png;base64,{{ captacion.IMAGEN | b64encode }}" alt="Card image cap">
+                  {% else %}
+                  <img class="card-img-top" src="path/to/default-image.png" alt="No Image">
+                  {% endif %}
+                  <div class="card-body">
+                     <h5 class="card-title">{{ captacion.ARTICULO }}</h5>
+                     <p class="card-text"><strong>DESCRIPCION:</strong> {{ captacion.DESCRIPCION }}</p>
+                     <p class="card-text"><strong>UBICACION:</strong> {{ captacion.UBICACION }}</p>
+                     <p class="card-text"><strong>ALMACEN:</strong> {{ captacion.ALMACEN }}</p>
+                     <p class="card-text"><strong>LOTE:</strong> {{ captacion.LOTE }}</p>
+                     <p class="card-text"><strong>FECHA EXPIRACION:</strong> {{ captacion.FECHA_EXPIRACION }}</p>
+                     <p class="card-text"><strong>CANTIDAD:</strong> {{ captacion.CANTIDAD }}</p>
+                     <p class="card-text"><strong>ESTADO:</strong> {{ captacion.ESTADO }}</p>
+                  </div>
+               </div>
+         </div>
+         {% endfor %}
+      </div>
+   </div>
+<br>
+<br>
+<script>
+  document.getElementById('boton_imprimir').addEventListener('click', function() {
+        var printContents = document.getElementById('reporte_complemento').innerHTML;
+        var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
+        location.reload();
+    });
+</script>
+<!-- <script src="{{ url_for('static', filename='js/common.js')}}"></script> -->
+<!-- <script type="module" src="{{ url_for('static', filename='js/inventario.js')}}"></script> -->
+{% endblock %}
