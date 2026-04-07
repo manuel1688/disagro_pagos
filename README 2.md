@@ -10,6 +10,9 @@ python -m venv venv
 # INSTALAR PROYECTO DEPENDENCIAS
 pip install -e .
 
+# RECOMPILAR TAILWINDCSS LOCAL
+bash scripts/build_tailwind.sh
+
 # DESPLEGAR EL PROYECTO EN WINDOWS
 $env:FLASK_APP = "disagro_i"
 $env:FLASK_ENV = "development"
@@ -41,6 +44,12 @@ flask run --host localhost --port 3000
 env SERVER=localhost DATABASE=disagro_db USERNAME=disagro PASSWORD=disagro2024 PUERTO=5432 FLASK_APP=disagro_i FLASK_ENV=development flask run --host localhost --port 3000
 
 env SERVER=0.0.0.0 DATABASE=disagro_db USERNAME=disagro PASSWORD=disagro2024 PUERTO=5432 FLASK_APP=disagro_i FLASK_ENV=development flask run --host 0.0.0.0 --port 4000
+
+# TailwindCSS
+- Archivo fuente: `disagro_p/static/css/tailwind.input.css`
+- Archivo compilado: `disagro_p/static/css/tailwind.css`
+- Configuración: `tailwind.config.js`
+- Binario standalone incluido en el repo: `./tailwindcss`
 
 # CREACION DE SUPER USUARIO
 

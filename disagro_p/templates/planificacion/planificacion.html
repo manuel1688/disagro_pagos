@@ -2,8 +2,6 @@
 {% block head %}
     {{ super() }} 
     <title>Configuración de maestros</title>
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css">
-    <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
 {% endblock %} 
 
 {% block content %}
@@ -11,36 +9,36 @@
 <br>
  
 {% if planificacion.ESTADO == 'EXISTENCIAS_CARGADAS' %}
-<div class="alert alert-warning alert-dismissible fade show" role="alert">
+<div class="alert alert-warning" role="alert">
   <strong>Planificación pendiente,</strong> se cargaron las existencias el {% if planificacion.FECHA is not none %} {{planificacion.FECHA.strftime("%d-%m-%Y %H:%M:%S")}} {% endif %}.
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+  <button type="button" class="close" data-ui-dismiss="alert" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
 </div>
 {% endif %}
 
 {% if planificacion.ESTADO == 'EN_INVENTARIO' %}
-<div class="alert alert-warning alert-dismissible fade show" role="alert">
+<div class="alert alert-warning" role="alert">
   <strong>Acción no permitida,</strong> la planificación no se puede modificar ya que está en proceso.
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+  <button type="button" class="close" data-ui-dismiss="alert" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
 </div>
 {% endif %}
 
 {% if cantidad_articulos_incompletos > 0 %}
-<div class="alert alert-info alert-dismissible fade show" role="alert">
+<div class="alert alert-info" role="alert">
   <strong>⚠️ Atención:</strong> Hay <strong id="contador-incompletos">{{ cantidad_articulos_incompletos }}</strong> artículo(s) con información incompleta que requieren actualización.
-  <button type="button" class="btn btn-sm btn-outline-primary ml-2" data-toggle="collapse" data-target="#collapseArticulosIncompletos" aria-expanded="false" aria-controls="collapseArticulosIncompletos">
+  <button type="button" class="btn btn-sm btn-outline-primary ml-2" data-ui-toggle="collapse" data-ui-target="#collapseArticulosIncompletos" aria-expanded="false" aria-controls="collapseArticulosIncompletos">
     Ver detalles
   </button>
   <button type="button" class="btn btn-sm btn-warning ml-2" id="btn-editar-articulos">
     <i class="fas fa-edit"></i> Editar artículos
   </button>
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+  <button type="button" class="close" data-ui-dismiss="alert" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
-  <div class="collapse mt-3" id="collapseArticulosIncompletos">
+  <div class="collapse mt-3" id="collapseArticulosIncompletos" hidden>
     <div class="card card-body">
       <p class="mb-2"><strong>Artículos incompletos:</strong></p>
       <ul class="mb-0" id="lista-articulos-incompletos">
@@ -344,7 +342,7 @@
         <h5 class="modal-title" id="modalEditarArticulosLabel">
           <i class="fas fa-edit"></i> Editar Artículos Incompletos
         </h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close" data-ui-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -373,7 +371,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+        <button type="button" class="btn btn-secondary" data-ui-dismiss="modal">
           <i class="fas fa-times"></i> Cerrar
         </button>
         <button type="button" class="btn btn-success" id="btn-guardar">

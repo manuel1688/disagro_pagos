@@ -4,13 +4,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pedido.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/despacho.css')}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.dataTables.min.css')}}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="{{ url_for('static', filename='js/dataTables.buttons.min.js')}}"></script>
     <script src="{{ url_for('static', filename='js/jszip.min.js')}}"></script>
     <script src="{{ url_for('static', filename='js/pdfmake.min.js')}}"></script>
     <script src="{{ url_for('static', filename='js/vfs_fonts.js')}}"></script>
-    <script src="{{ url_for('static', filename='js/buttons.html5.min.js')}}"></script>
     <script src="{{ url_for('static', filename='js/html2pdf.bundle.min.js')}}"></script>
     {% block title %}
     <title></title>
@@ -44,7 +41,7 @@
             <div class="btn-group btn-block">
               <button id="boton_select_bodega" type="button" class="btn btn-sm btn-danger">Bodega</button>
               <button type="button" class="btn btn-sm btn-danger dropdown-toggle dropdown-toggle-split" 
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                data-ui-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="sr-only">Toggle Dropdown</span>
               </button>
               <div class="dropdown-menu">
@@ -58,7 +55,7 @@
             <div class="btn-group btn-block">
               <button id="boton_select_comcode" type="button" class="btn btn-sm btn-danger">Comcode</button>
               <button type="button" class="btn btn-sm btn-danger dropdown-toggle dropdown-toggle-split" 
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                data-ui-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="sr-only">Toggle Dropdown</span>
               </button>
               <div class="dropdown-menu">

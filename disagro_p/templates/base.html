@@ -6,45 +6,34 @@
       <link rel="stylesheet" href="{{ url_for('static', filename='css/fontawesome.min.css')}}">
       <link rel="stylesheet" href="{{ url_for('static', filename='css/brands.min.css')}}">
       <link rel="stylesheet" href="{{ url_for('static', filename='css/solid.min.css')}}">
-      <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css')}}">
-      <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css')}}">
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css')}}">
       <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-      <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
-      <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.css')}}"> -->
-      <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
-      <link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.bootstrap4.min.css')}}">
       <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css')}}">
   
       <script src="{{ url_for('static', filename='js/jquery-3.5.1.js')}}"></script>
       <script src="{{ url_for('static', filename='js/jquery-ui.js')}}"></script>
       <script src="{{ url_for('static', filename='js/idioma.js') }}"></script>
-      <script src="{{ url_for('static', filename='js/popper.min.js.map') }}"></script>
-  
-      <script src="{{ url_for('static', filename='js/bootstrap.min.js.map') }}"></script>
-  
       <script src="{{ url_for('static', filename='js/loader.js') }}"></script>
-      <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
-      <script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
-      <script src="{{ url_for('static', filename='js/dataTables.responsive.min.js') }}"></script>
-      <script src="{{ url_for('static', filename='js/responsive.bootstrap4.min.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/simple_table.js') }}"></script>
     {% block title %}<title>DISAGRO </title>{% endblock %}
     {% endblock %}
   </head>
-  <body>
+  <body class="app-shell">
     <header>
       {% block header %}{% endblock %}
     </header>
-    <main>
-      <div id="content" class="container-fluid">
+    <main class="app-main">
+      <div id="content">
         {% block content %} {% endblock %}
       </div>
-      <div id="cargando" class="container text-center d-none">
-        <br><br><br>
-        <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
-          <span class="sr-only">Loading...</span>
+      <div id="cargando" class="d-none py-16 text-center">
+        <div class="inline-flex items-center gap-3 rounded-full border border-brand-200 bg-white px-5 py-3 text-sm font-semibold text-brand-800 shadow-sm" role="status">
+          <div class="spinner-border h-6 w-6"></div>
+          <span>Cargando...</span>
         </div>
       </div>
     </main>
   </body>
-  <footer id="pie_de_pagina" class="footer"></footer>
+  <footer id="pie_de_pagina" class="footer">DISAGRO</footer>
 </html>
